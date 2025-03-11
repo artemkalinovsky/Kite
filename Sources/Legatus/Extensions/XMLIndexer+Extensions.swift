@@ -2,11 +2,10 @@ import Foundation
 import SWXMLHash
 
 extension XMLIndexer {
-
-    internal subscript(indexes: [String]) -> XMLIndexer {
-        var xmlIndexer = self
-        indexes.forEach { xmlIndexer = xmlIndexer[$0] }
-        return xmlIndexer
+    subscript(keys: [String]) -> XMLIndexer {
+        keys.reduce(self) { current, key in
+            current[key]
+        }
     }
-
 }
+

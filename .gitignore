@@ -6,11 +6,11 @@
 .DS_Store
 xcuserdata/
 
-## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
+## Compatibility with older Xcode versions
 *.xcscmblueprint
 *.xccheckout
 
-## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
+## Xcode 3 and earlier (not required starting Xcode 4)
 build/
 DerivedData/
 *.moved-aside
@@ -37,6 +37,5 @@ playground.xcworkspace
 
 # Swift Package Manager
 .build/
-
-# VSCode
-.vscode
+.swiftpm/
+Packages/

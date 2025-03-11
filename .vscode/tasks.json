@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Clean Package",
+            "type": "shell",
+            "command": "swift package clean",
+            "problemMatcher": []
+        },
+        {
+            "label": "Resolve SPM Dependencies",
+            "type": "shell",
+            "command": "swift package resolve",
+            "problemMatcher": []
+        },
+        {
+            "label": "SwiftLint",
+            "type": "shell",
+            "command": "swiftlint --fix",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Package",
+            "type": "shell",
+            "command": "swift build",
+            "dependsOn": [
+                "Clean Package",
+                "Resolve SPM Dependencies",
+                "SwiftLint"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "swift test",
+            "dependsOn": [
+                "Clean Package",
+                "Resolve SPM Dependencies",
+                "SwiftLint"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

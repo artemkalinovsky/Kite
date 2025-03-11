@@ -1,7 +1,6 @@
 import Foundation
-import Alamofire
 
-public extension APIRequest {
+public extension HTTPRequestProtocol {
     var fullPath: String? {
         nil
     }
@@ -10,7 +9,7 @@ public extension APIRequest {
         ""
     }
 
-    var method: Method {
+    var method: HTTPMethod {
         .get
     }
 
@@ -22,23 +21,19 @@ public extension APIRequest {
         [:]
     }
 
-    var encoding: ParameterEncoding {
-        method == .get ? URLEncoding.default : JSONEncoding.default
-    }
-
     var multipartFormData: [String: URL]? {
         nil
     }
 
-    func configureHTTPHeaders() -> Swift.Result<HTTPHeaders, Error> {
-        var headers = [String: String]()
-        do {
-            headers = try self.headers()
-        } catch {
-            return .failure(error)
-        }
-        return .success(.init(headers))
-    }
+   func configureHTTPHeaders() -> Result<[String: String], Error> {
+       var headers = [String: String]()
+       do {
+           headers = try self.headers()
+       } catch {
+           return .failure(error)
+       }
+       return .success(headers)
+   }
 
     func configurePath(baseUrl: URL) -> String {
         var requestPath = baseUrl.appendingPathComponent(self.path).absoluteString

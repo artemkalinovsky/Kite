@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E52F881C-E1D3-46A3-B8B4-37A769E7360E",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "LegatusTests",
+        "name" : "LegatusTests"
+      }
+    }
+  ],
+  "version" : 1
+}

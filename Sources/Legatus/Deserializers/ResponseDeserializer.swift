@@ -1,32 +1,26 @@
-import Combine
 import Foundation
 
 open class ResponseDeserializer<T> {
-    typealias Transform = ((Data) throws -> T)
+    public typealias Transform = (Data) throws -> T
+    private let transform: Transform
 
-    let transform: Transform
-
-    init(transform: @escaping Transform) {
+    public init(transform: @escaping Transform) {
         self.transform = transform
     }
 
-    public func deserialize(data: Data) -> Future<T, Error> {
-        fatalError("Not Implemented")
+    open func deserialize(data: Data) async throws -> T {
+        return try transform(data)
     }
 }
 
-open class EmptyDeserializer: ResponseDeserializer<Void> {
-    public override func deserialize(data: Data) -> Future<Void, Error> {
-        Future { promise in
-            promise(.success(()))
-        }
+public class EmptyDeserializer: ResponseDeserializer<Void> {
+    public override func deserialize(data: Data) async throws -> Void {
+        ()
     }
 }
 
-open class RawDataDeserializer: ResponseDeserializer<Data> {
-    public override func deserialize(data: Data) -> Future<Data, Error> {
-        Future { promise in
-            promise(.success(data))
-        }
+public class RawDataDeserializer: ResponseDeserializer<Data> {
+    public override func deserialize(data: Data) async throws -> Data {
+        data
     }
 }

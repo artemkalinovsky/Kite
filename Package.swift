@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -17,16 +17,18 @@ let package = Package(
             targets: ["Legatus"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: Version("5.0.0"))),
-        .package(url: "https://github.com/drmohundro/SWXMLHash.git", .upToNextMajor(from: Version("7.0.0")))
+        .package(url: "https://github.com/drmohundro/SWXMLHash.git", exact: "8.1.0")
     ],
     targets: [
         .target(
             name: "Legatus",
-            dependencies: ["Alamofire", "SWXMLHash"]),
+            dependencies: [
+                .product(name: "SWXMLHash", package: "SWXMLHash")
+            ]
+        ),
         .testTarget(
             name: "LegatusTests",
             dependencies: ["Legatus"])
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageModes: [.v6]
 )
