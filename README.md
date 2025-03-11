@@ -101,7 +101,7 @@ struct FetchRandomUsersRequest: DeserializeableRequest {
     var baseURL: URL { URL(string: "https://randomuser.me")! }
     var path: String {"api"}
 
-    var deserializer: ResponseDeserializer<[User]> {
+    var deserializer: ResponseDataDeserializer<[User]> {
         JSONDeserializer<User>.collectionDeserializer(keyPath: "results")
     }
 }
@@ -110,7 +110,9 @@ struct FetchRandomUsersRequest: DeserializeableRequest {
 * #### Perfrom created request
 
 ``` swift
-   let users = try await apiClient.execute(request: FetchRandomUsersRequest())
+Task {
+    try await apiClient.execute(request: FetchRandomUsersRequest())
+}
 ```
 
 Voilà!🧑‍🎨
