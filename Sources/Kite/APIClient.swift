@@ -1,21 +1,21 @@
 import Foundation
 
-public final class APIClient {
-    private let urlSesion: URLSession
+public class APIClient {
+    private let urlSession: URLSession
 
-    public init(urlSesion: URLSession = URLSession.shared) {
-        self.urlSesion = urlSesion
+    public init(urlSession: URLSession = URLSession.shared) {
+        self.urlSession = urlSession
     }
 
-    public func execute<T>(request: HTTPRequestProtocol, deserializer: ResponseDeserializer<T>) async throws -> T {
-        guard let url = URL(string: request.fullPath ?? request.path) else {
+    public func execute<T>(request: HTTPRequestProtocol, deserializer: ResponseDataDeserializer<T> = VoidDeserializer()) async throws -> T {
+        guard let url = request.url else {
             throw URLError(.badURL)
         }
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
 
-        let headers = try request.headers()
-        for (field, value) in headers {
+        for (field, value) in request.headers {
             urlRequest.setValue(value, forHTTPHeaderField: field)
         }
 
@@ -38,12 +38,20 @@ public final class APIClient {
             throw URLError(.unsupportedURL)
         }
 
-        let (data, _) = try await urlSesion.data(for: urlRequest)
+        let (data, _) = try await urlSession.data(for: urlRequest)
 
         return try await deserializer.deserialize(data: data)
     }
 
     public func execute<R: DeserializeableRequest>(request: R) async throws -> R.ResponseType {
         try await execute(request: request, deserializer: request.deserializer)
+    }
+
+    public func execute<R: AuthRequestProtocol & DeserializeableRequest>(request: R) async throws -> R.ResponseType {
+        guard let authorizationHeader = request.headers["Authorization"], !authorizationHeader.isEmpty else {
+            throw URLError(.userAuthenticationRequired)
+        }
+
+        return try await execute(request: request, deserializer: request.deserializer)
     }
 }

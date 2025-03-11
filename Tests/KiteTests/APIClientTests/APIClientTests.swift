@@ -5,15 +5,15 @@
 //  Created by Artem Kalinovsky on 10.03.2025.
 //
 
-import Testing
 import Foundation
 import Kite
+import Testing
 
 @Suite("APIClientTests")
 struct APIClientTests {
-    @Test("execute(request:) returns expected Data")
-    func testExecuteHTTPRequestProtocol() async throws {
-        let client = APIClient(urlSesion: makeMockSession())
+    @Test("execute(request:) returns expected raw data")
+    func testExecuteReturnsExpectedRawData() async throws {
+        let client = APIClient(urlSession: makeMockSession())
         let expectedData = "Test Data".data(using: .utf8)!
         let expectedResponse = HTTPURLResponse(
             url: URL(string: "https://example.com/test")!,
@@ -24,21 +24,42 @@ struct APIClientTests {
 
         let dummyRequest = FetchRawDataRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { _ in
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            _ in
             return (expectedData, expectedResponse)
         }
 
-        let data = try await client.execute(
-            request: dummyRequest,
-            deserializer: RawDataDeserializer(transform: { $0 })
-        )
+        let data = try await client.execute(request: dummyRequest, deserializer: RawDataDeserializer())
 
         #expect(data == expectedData)
     }
 
-    @Test("execute(request:) deserializes response correctly for DeserializeableRequest")
-    func testExecuteDeserializeableRequest() async throws {
-        let client = APIClient(urlSesion: makeMockSession())
+    @Test("execute(request:) handles authenticated request correctly")
+    func testExecuteHandlesAuthenticatedRequestCorrectly() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let expectedData = "Authenticated Data".data(using: .utf8)!
+        let expectedResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/auth")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+
+        let dummyRequest = FetchRawDataAuthRequest(accessToken: UUID().uuidString)
+
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            _ in
+            return (expectedData, expectedResponse)
+        }
+
+        let data = try await client.execute(request: dummyRequest, deserializer: RawDataDeserializer())
+
+        #expect(data == expectedData)
+    }
+
+    @Test("execute(request:) deserializes JSON response correctly")
+    func testExecuteDeserializesJSONResponseCorrectly() async throws {
+        let client = APIClient(urlSession: makeMockSession())
         let expectedData = JSONStubs.singlePerson.data(using: .utf8)!
         let expectedTestPerson = TestPerson.sample
         let expectedResponse = HTTPURLResponse(
@@ -48,9 +69,33 @@ struct APIClientTests {
             headerFields: nil
         )!
 
-        let dummyRequest = FetchSingleTestPersonRequest()
+        let dummyRequest = FetchSingleTestPersonJSONRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { _ in
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            _ in
+            return (expectedData, expectedResponse)
+        }
+
+        let result = try await client.execute(request: dummyRequest)
+        #expect(result == expectedTestPerson)
+    }
+
+    @Test("execute(request:) deserializes XML response correctly")
+    func testExecuteDeserializesXMLResponseCorrectly() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let expectedData = XMLStubs.singlePerson.data(using: .utf8)!
+        let expectedTestPerson = TestPerson.sample
+        let expectedResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/test")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+
+        let dummyRequest = FetchSingleTestPersonXMLRequest()
+
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            _ in
             return (expectedData, expectedResponse)
         }
 
@@ -59,8 +104,8 @@ struct APIClientTests {
     }
 }
 
-private extension APIClientTests {
-    func makeMockSession() -> URLSession {
+extension APIClientTests {
+    fileprivate func makeMockSession() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: configuration)

@@ -8,16 +8,19 @@
 import Foundation
 
 final actor MockURLHandlerStore {
+    private typealias Handler = @Sendable (URLRequest) throws -> (Data, URLResponse)
     static let shared = MockURLHandlerStore()
     private init() {}
-    private var handlers: [String: (@Sendable (URLRequest) throws -> (Data, URLResponse))] = [:]
-
-    func updateRequestHandler(for id: String, _ handler: @escaping @Sendable (URLRequest) throws -> (Data, URLResponse)) {
-        handlers[id] = handler
+    private var handlers: [String: Handler] = [:]
+    func updateRequestHandler(
+        for id: String,
+        requestHandler: @escaping @Sendable (URLRequest) throws -> (Data, URLResponse)
+    ) {
+        handlers[id] = requestHandler
     }
 
     func handler(for id: String) -> (@Sendable (URLRequest) throws -> (Data, URLResponse))? {
-        return handlers[id]
+        handlers[id]
     }
 
     func removeHandler(for id: String) {

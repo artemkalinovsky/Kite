@@ -8,6 +8,10 @@
 import Foundation
 
 final class MockURLProtocol: URLProtocol, @unchecked Sendable {
+    enum Error: Swift.Error {
+        case missedXTestIDHeader
+        case missedRequestHandler
+    }
 
     override class func canInit(with request: URLRequest) -> Bool {
         return true
@@ -20,16 +24,17 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     override func startLoading() {
         Task {
             guard let testID = self.request.value(forHTTPHeaderField: "X-Test-ID") else {
-                fatalError("No test id header found in request")
+                throw Error.missedXTestIDHeader
             }
             guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
-                fatalError("No request handler set for test id \(testID)")
+                throw Error.missedRequestHandler
             }
             do {
                 let (data, response) = try handler(self.request)
                 await MainActor.run { [weak self] in
                     guard let self else { return }
-                    self.client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                    self.client?.urlProtocol(
+                        self, didReceive: response, cacheStoragePolicy: .notAllowed)
                     self.client?.urlProtocol(self, didLoad: data)
                     self.client?.urlProtocolDidFinishLoading(self)
                 }
@@ -42,5 +47,5 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
         }
     }
 
-    override func stopLoading() { }
+    override func stopLoading() {}
 }
