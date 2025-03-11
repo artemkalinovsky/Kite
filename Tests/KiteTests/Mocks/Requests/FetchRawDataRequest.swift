@@ -14,7 +14,7 @@ struct FetchRawDataRequest: HTTPRequestProtocol {
     var parameters: [String: Any]? { nil }
     var method: HTTPMethod { .get }
     var multipartFormData: [String: URL]? { nil }
-    func headers() throws -> [String : String] { return ["X-Test-ID": id.uuidString] }
+    func headers() throws -> [String: String] { return ["X-Test-ID": id.uuidString] }
 
     let id = UUID()
 }

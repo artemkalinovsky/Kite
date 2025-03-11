@@ -14,7 +14,7 @@ open class ResponseDeserializer<T> {
 }
 
 public class EmptyDeserializer: ResponseDeserializer<Void> {
-    public override func deserialize(data: Data) async throws -> Void {
+    public override func deserialize(data: Data) async throws {
         ()
     }
 }

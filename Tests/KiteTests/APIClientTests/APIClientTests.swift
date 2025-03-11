@@ -24,8 +24,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchRawDataRequest()
 
-
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { request in
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { _ in
             return (expectedData, expectedResponse)
         }
 
@@ -51,7 +50,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchSingleTestPersonRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { request in
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) { _ in
             return (expectedData, expectedResponse)
         }
 

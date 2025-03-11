@@ -9,7 +9,9 @@ let package = Package(
         .macOS(.v12),
         .iOS(.v15),
         .tvOS(.v15),
-        .watchOS(.v8)
+        .watchOS(.v8),
+        .driverKit(.v19),
+        .visionOS(.v1)
     ],
     products: [
         .library(
@@ -28,7 +30,11 @@ let package = Package(
         ),
         .testTarget(
             name: "KiteTests",
-            dependencies: ["Kite"])
+            dependencies: ["Kite"],
+            exclude: [
+                "KiteTests.xctestplan"
+            ]
+        )
     ],
     swiftLanguageModes: [.v6]
 )
