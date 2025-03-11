@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Legatus",
+    name: "Kite",
     platforms: [
         .macOS(.v12),
         .iOS(.v15),
@@ -13,22 +13,22 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "Legatus",
-            targets: ["Legatus"])
+            name: "Kite",
+            targets: ["Kite"])
     ],
     dependencies: [
         .package(url: "https://github.com/drmohundro/SWXMLHash.git", exact: "8.1.0")
     ],
     targets: [
         .target(
-            name: "Legatus",
+            name: "Kite",
             dependencies: [
                 .product(name: "SWXMLHash", package: "SWXMLHash")
             ]
         ),
         .testTarget(
-            name: "LegatusTests",
-            dependencies: ["Legatus"])
+            name: "KiteTests",
+            dependencies: ["Kite"])
     ],
     swiftLanguageModes: [.v6]
 )

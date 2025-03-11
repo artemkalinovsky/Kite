@@ -1,4 +1,4 @@
-![swift workflow](https://github.com/artemkalinovsky/Legatus/actions/workflows/swift.yml/badge.svg) 
+![swift workflow](https://github.com/artemkalinovsky/Kite/actions/workflows/swift.yml/badge.svg) 
 
 🚧 WIP 🚧
 I'm still fine-tuning the code—hang tight! 🔧⚙️
@@ -15,4 +15,4 @@ More updates coming soon! 🚀
 
 ## License 📄
 
-Legatus is released under an MIT license. See [LICENCE](https://github.com/artemkalinovsky/Legatus/blob/master/LICENSE) for more information.
+Kite is released under an MIT license. See [LICENCE](https://github.com/artemkalinovsky/Kite/blob/master/LICENSE) for more information.

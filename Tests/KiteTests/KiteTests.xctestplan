@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "E52F881C-E1D3-46A3-B8B4-37A769E7360E",
+      "id" : "B4E9ED3A-55EB-4287-BD7D-834D18FD3266",
       "name" : "Configuration 1",
       "options" : {
 
@@ -15,8 +15,8 @@
     {
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "LegatusTests",
-        "name" : "LegatusTests"
+        "identifier" : "KiteTests",
+        "name" : "KiteTests"
       }
     }
   ],

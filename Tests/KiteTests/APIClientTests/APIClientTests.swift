@@ -1,13 +1,13 @@
 //
 //  APIClientTests.swift
-//  Legatus
+//  Kite
 //
 //  Created by Artem Kalinovsky on 10.03.2025.
 //
 
 import Testing
 import Foundation
-import Legatus
+import Kite
 
 @Suite("APIClientTests")
 struct APIClientTests {

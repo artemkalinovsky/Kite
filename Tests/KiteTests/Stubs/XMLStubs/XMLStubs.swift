@@ -1,6 +1,6 @@
 //
 //  XMLStubs.swift
-//  Legatus
+//  Kite
 //
 //  Created by Artem Kalinovsky on 11.03.2025.
 //

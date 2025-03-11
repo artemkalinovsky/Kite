@@ -1,13 +1,13 @@
 //
 //  XMLDeserializerTests.swift
-//  Legatus
+//  Kite
 //
 //  Created by Artem Kalinovsky on 10.03.2025.
 //
 
 import Testing
 import SWXMLHash
-import Legatus
+import Kite
 
 @Suite("XMLDeserializerTests")
 struct XMLDeserializerTests {

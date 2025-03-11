@@ -1,12 +1,12 @@
 //
 //  JSONDeserializerTests.swift
-//  Legatus
+//  Kite
 //
 //  Created by Artem Kalinovsky on 10.03.2025.
 //
 
 import Testing
-import Legatus
+import Kite
 
 @Suite("JSONDeserializerTests")
 struct JSONDeserializerTests {

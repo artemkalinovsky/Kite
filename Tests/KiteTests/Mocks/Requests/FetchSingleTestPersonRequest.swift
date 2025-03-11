@@ -1,14 +1,14 @@
 //
-//  FetchRawDataRequest.swift
-//  Legatus
+//  FetchSingleTestPersonRequest.swift
+//  Kite
 //
 //  Created by Artem Kalinovsky on 11.03.2025.
 //
 
 import Foundation
-@testable import Legatus
+import Kite
 
-struct FetchRawDataRequest: HTTPRequestProtocol {
+struct FetchSingleTestPersonRequest: DeserializeableRequest {
     var fullPath: String? { "https://example.com/test" }
     var path: String { "https://example.com/test" }
     var parameters: [String: Any]? { nil }
@@ -17,4 +17,8 @@ struct FetchRawDataRequest: HTTPRequestProtocol {
     func headers() throws -> [String : String] { return ["X-Test-ID": id.uuidString] }
 
     let id = UUID()
+
+    var deserializer: ResponseDeserializer<TestPerson> {
+        JSONDeserializer<TestPerson>.singleObjectDeserializer()
+    }
 }
