@@ -31,8 +31,10 @@ let package = Package(
         .testTarget(
             name: "KiteTests",
             dependencies: ["Kite"],
-            exclude: [
-                "KiteTests.xctestplan"
+            path: "Tests/KiteTests",
+            exclude: ["KiteTests.xctestplan"],
+            resources: [
+                .process("Stubs/BinaryStubs")
             ]
         )
     ],

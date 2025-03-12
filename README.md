@@ -1,4 +1,14 @@
-![swift workflow](https://github.com/artemkalinovsky/Kite/actions/workflows/swift.yml/badge.svg) 
+![swift workflow](https://github.com/artemkalinovsky/Kite/actions/workflows/swift.yml/badge.svg)
+[![Swift 6](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
+[![macOS](https://img.shields.io/badge/macOS-12%2B-blue.svg)](https://developer.apple.com/macos/)
+[![iOS](https://img.shields.io/badge/iOS-15%2B-blue.svg)](https://developer.apple.com/ios/)
+[![tvOS](https://img.shields.io/badge/tvOS-15%2B-blue.svg)](https://developer.apple.com/tvos/)
+[![watchOS](https://img.shields.io/badge/watchOS-8%2B-blue.svg)](https://developer.apple.com/watchos/)
+[![driverKit](https://img.shields.io/badge/driverKit-19%2B-blue.svg)](https://developer.apple.com/driverkit/)
+[![visionOS](https://img.shields.io/badge/visionOS-1%2B-blue.svg)](https://developer.apple.com/visionos/)
+
+<img src="https://github.com/user-attachments/assets/67d7a28c-e45b-4abd-bdf4-86b329c439b5" width="20%" />
+
 
 # Kite 
 
@@ -27,8 +37,9 @@ Or add the following to your `Package.swift` file:
 
 ```
 
-and then specify `"Kite"` as a dependency of the Target in which you wish to use Legatus.
-Here's an example `PackageDescription` :
+Then specify "Kite" as a dependency of the target in which you wish to use Kite.
+
+Here's an example `Package.swift`:
 
 ``` swift
 // swift-tools-version:6.0
@@ -53,7 +64,7 @@ let package = Package(
 ```
 ## Usage 🧑‍💻
 
-Let's suppose we want to fetch list of users from JSON and response is look like this:
+Let's suppose we want to fetch a list of users from JSON and the response looks like this:
 
 ``` json
 { 
@@ -77,7 +88,7 @@ Let's suppose we want to fetch list of users from JSON and response is look like
     let apiClient = APIClient()
 ```
 
-2. Create response model:
+2. Create the Response Model:
 
 ``` swift
 struct User: Decodable {
@@ -91,7 +102,7 @@ struct User: Decodable {
 }
 ```
 
-3. Create request with endpoint path and desired reponse deserializer:
+3. Create a Request with Endpoint Path and Desired Response Deserializer:
 
 ``` swift
 import Foundation
@@ -107,11 +118,11 @@ struct FetchRandomUsersRequest: DeserializeableRequest {
 }
 ```
 
-* #### Perfrom created request
+* #### Perform the Request
 
 ``` swift
 Task {
-    try await apiClient.execute(request: FetchRandomUsersRequest())
+    let (users, urlResponse) = try await apiClient.execute(request: FetchRandomUsersRequest())
 }
 ```
 

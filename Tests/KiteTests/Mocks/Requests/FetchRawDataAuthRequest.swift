@@ -1,7 +1,7 @@
 import Foundation
 import Kite
 
-struct FetchRawDataAuthRequest: AuthRequestProtocol & DeserializeableRequest {
+struct FetchRawDataAuthRequest: AuthRequestProtocol & DeserializeableRequestProtocol {
     let id: UUID
     let accessToken: String
     var baseURL: URL { URL(string: "https://example.com")! }

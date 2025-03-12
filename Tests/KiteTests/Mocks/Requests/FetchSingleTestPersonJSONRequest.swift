@@ -8,7 +8,7 @@
 import Foundation
 import Kite
 
-struct FetchSingleTestPersonJSONRequest: DeserializeableRequest {
+struct FetchSingleTestPersonJSONRequest: DeserializeableRequestProtocol {
     var baseURL: URL { URL(string: "https://example.com")! }
     var path: String { "test" }
     var headers: [String: String] { ["X-Test-ID": id.uuidString] }
