@@ -108,7 +108,7 @@ struct User: Decodable {
 import Foundation
 import Kite
 
-struct FetchRandomUsersRequest: DeserializeableRequest {
+struct FetchRandomUsersRequest: DeserializeableRequestProtocol {
     var baseURL: URL { URL(string: "https://randomuser.me")! }
     var path: String {"api"}
 
