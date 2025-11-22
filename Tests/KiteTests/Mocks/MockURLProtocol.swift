@@ -22,7 +22,7 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func startLoading() {
-        Task {
+        Task { @MainActor in
             guard let testID = self.request.value(forHTTPHeaderField: "X-Test-ID") else {
                 throw Error.missedXTestIDHeader
             }
@@ -31,18 +31,12 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
             }
             do {
                 let (data, response) = try handler(self.request)
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    self.client?.urlProtocol(
-                        self, didReceive: response, cacheStoragePolicy: .notAllowed)
-                    self.client?.urlProtocol(self, didLoad: data)
-                    self.client?.urlProtocolDidFinishLoading(self)
-                }
+                self.client?.urlProtocol(
+                    self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                self.client?.urlProtocol(self, didLoad: data)
+                self.client?.urlProtocolDidFinishLoading(self)
             } catch {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    self.client?.urlProtocol(self, didFailWithError: error)
-                }
+                self.client?.urlProtocol(self, didFailWithError: error)
             }
         }
     }
