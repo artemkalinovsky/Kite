@@ -19,7 +19,7 @@ let package = Package(
             targets: ["Kite"])
     ],
     dependencies: [
-        .package(url: "https://github.com/drmohundro/SWXMLHash.git", exact: "8.1.0")
+        .package(url: "https://github.com/drmohundro/SWXMLHash.git", exact: "8.1.1")
     ],
     targets: [
         .target(
