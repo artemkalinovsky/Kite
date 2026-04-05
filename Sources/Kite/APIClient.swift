@@ -1,7 +1,7 @@
 import Foundation
 import UniformTypeIdentifiers
 
-public class APIClient: @unchecked Sendable {
+public final class APIClient: Sendable {
     private let urlSession: URLSession
 
     public init(urlSession: URLSession = URLSession.shared) {
