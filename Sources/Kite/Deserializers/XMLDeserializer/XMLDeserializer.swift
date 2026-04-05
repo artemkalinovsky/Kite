@@ -1,8 +1,15 @@
 import Foundation
 import SWXMLHash
 
-public enum XMLDeserializerError: Error {
+public enum XMLDeserializerError: LocalizedError {
     case xmlDeserializationFailed(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .xmlDeserializationFailed(let message):
+            message
+        }
+    }
 }
 
 public class XMLDeserializer<T>: ResponseDataDeserializer<T> {

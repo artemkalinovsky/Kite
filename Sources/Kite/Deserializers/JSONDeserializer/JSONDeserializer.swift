@@ -1,8 +1,17 @@
 import Foundation
 
-public enum JSONDeserializerError: Error {
+public enum JSONDeserializerError: LocalizedError {
     case jsonDeserializableInitFailed(String)
     case decodingFailed(underlying: Error, targetType: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .jsonDeserializableInitFailed(let message):
+            message
+        case .decodingFailed(let underlying, let targetType):
+            "Failed to decode \(targetType): \(underlying.localizedDescription)"
+        }
+    }
 }
 
 public class JSONDeserializer<T>: ResponseDataDeserializer<T> {

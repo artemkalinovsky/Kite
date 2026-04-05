@@ -1,8 +1,15 @@
 import Foundation
 import UniformTypeIdentifiers
 
-public enum APIClientError: Error {
+public enum APIClientError: LocalizedError {
     case unacceptableStatusCode(statusCode: Int, response: HTTPURLResponse, data: Data)
+
+    public var errorDescription: String? {
+        switch self {
+        case .unacceptableStatusCode(let statusCode, _, _):
+            "Request failed with status code \(statusCode)."
+        }
+    }
 }
 
 public final class APIClient: Sendable {
