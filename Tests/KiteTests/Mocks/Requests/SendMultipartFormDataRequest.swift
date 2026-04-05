@@ -10,10 +10,7 @@ struct SendMultipartFormDataRequest: AuthRequestProtocol & DeserializeableReques
     let multipartFormData: [String: URL]?
 
     var headers: [String: String] {
-        [
-            "X-Test-ID": id.uuidString,
-            "Authorization": "\(accessTokenPrefix) \(accessToken)"
-        ]
+        ["X-Test-ID": id.uuidString]
     }
 
     var deserializer: ResponseDataDeserializer<URL> {

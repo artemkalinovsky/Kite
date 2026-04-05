@@ -10,10 +10,7 @@ struct FetchRawDataAuthRequest: AuthRequestProtocol & DeserializeableRequestProt
     }
 
     var headers: [String: String] {
-        [
-            "X-Test-ID": id.uuidString,
-            "Authorization": "\(accessTokenPrefix) \(accessToken)"
-        ]
+        ["X-Test-ID": id.uuidString]
     }
 
     init(accessToken: String, id: UUID = UUID()) {

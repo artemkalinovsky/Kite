@@ -8,4 +8,5 @@
 public protocol AuthRequestProtocol: HTTPRequestProtocol {
     var accessToken: String { get }
     var accessTokenPrefix: String { get }
+    var authorizationHeaders: [String: String] { get }
 }

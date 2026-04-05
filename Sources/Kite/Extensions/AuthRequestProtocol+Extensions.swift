@@ -12,7 +12,7 @@ extension AuthRequestProtocol {
         "Bearer"
     }
 
-    public var headers: [String: String] {
+    public var authorizationHeaders: [String: String] {
         [
             "Authorization": "\(accessTokenPrefix) \(accessToken)"
         ]

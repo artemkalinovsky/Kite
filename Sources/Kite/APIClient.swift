@@ -21,7 +21,8 @@ public final class APIClient: Sendable {
 
     public func execute<T>(
         request: HTTPRequestProtocol,
-        deserializer: ResponseDataDeserializer<T> = VoidDeserializer()
+        deserializer: ResponseDataDeserializer<T> = VoidDeserializer(),
+        additionalHeaders: [String: String] = [:]
     ) async throws -> (T, URLResponse) {
         guard let url = request.url else {
             throw URLError(.badURL)
@@ -30,7 +31,8 @@ public final class APIClient: Sendable {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
 
-        for (field, value) in request.headers {
+        let allHeaders = additionalHeaders.merging(request.headers) { _, custom in custom }
+        for (field, value) in allHeaders {
             urlRequest.setValue(value, forHTTPHeaderField: field)
         }
 
@@ -92,11 +94,12 @@ public final class APIClient: Sendable {
     }
 
     public func execute<R: AuthRequestProtocol & DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {
-        guard let authorizationHeader = request.headers["Authorization"], !authorizationHeader.isEmpty
+        let authHeaders = request.authorizationHeaders
+        guard let authorizationHeader = authHeaders["Authorization"], !authorizationHeader.isEmpty
         else {
             throw URLError(.userAuthenticationRequired)
         }
 
-        return try await execute(request: request, deserializer: request.deserializer)
+        return try await execute(request: request, deserializer: request.deserializer, additionalHeaders: authHeaders)
     }
 }
