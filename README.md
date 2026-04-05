@@ -13,6 +13,7 @@
 # Kite 
 
 Kite is named after the kite bird, known for its lightness, speed, and agile flight. This Swift Package aims to embody those qualities—offering a lightweight, fast, and flexible networking layer that soars across Apple platforms.
+## Features
 
 - `async`/`await`-first request execution
 - Small protocol-based request model
