@@ -23,13 +23,13 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
 
     override func startLoading() {
         Task { @MainActor in
-            guard let testID = self.request.value(forHTTPHeaderField: "X-Test-ID") else {
-                throw Error.missedXTestIDHeader
-            }
-            guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
-                throw Error.missedRequestHandler
-            }
             do {
+                guard let testID = self.request.value(forHTTPHeaderField: "X-Test-ID") else {
+                    throw Error.missedXTestIDHeader
+                }
+                guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
+                    throw Error.missedRequestHandler
+                }
                 let (data, response) = try handler(self.request)
                 self.client?.urlProtocol(
                     self, didReceive: response, cacheStoragePolicy: .notAllowed)
