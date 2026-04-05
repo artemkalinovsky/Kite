@@ -2,6 +2,7 @@ import Foundation
 
 public enum JSONDeserializerError: Error {
     case jsonDeserializableInitFailed(String)
+    case decodingFailed(underlying: Error, targetType: String)
 }
 
 public class JSONDeserializer<T>: ResponseDataDeserializer<T> {
@@ -35,8 +36,9 @@ extension JSONDeserializer where T: Decodable {
                             return try jsonDecoder.decode(T.self, from: data, keyPath: path.joined(separator: "."))
                         }
                     } catch {
-                        throw JSONDeserializerError.jsonDeserializableInitFailed(
-                            "Failed to create \(T.self) object from path \(path)."
+                        throw JSONDeserializerError.decodingFailed(
+                            underlying: error,
+                            targetType: String(describing: T.self)
                         )
                     }
                 }
@@ -56,8 +58,9 @@ extension JSONDeserializer where T: Decodable {
                             return try jsonDecoder.decode([T].self, from: data, keyPath: path.joined(separator: "."))
                         }
                     } catch {
-                        throw JSONDeserializerError.jsonDeserializableInitFailed(
-                            "Failed to create array of \(T.self) objects."
+                        throw JSONDeserializerError.decodingFailed(
+                            underlying: error,
+                            targetType: String(describing: [T].self)
                         )
                     }
                 }
