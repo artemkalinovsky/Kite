@@ -46,19 +46,19 @@ public final class APIClient: Sendable {
 
             var body = Data()
             for (key, fileURL) in multipartFormData {
-                body.append("--\(boundary)\r\n".data(using: .utf8)!)
+                body.append(Data("--\(boundary)\r\n".utf8))
                 let filename = fileURL.lastPathComponent
                 body.append(
-                    "Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!
+                    Data("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n".utf8)
                 )
                 let fileExtension = fileURL.pathExtension
                 let contentType = UTType(filenameExtension: fileExtension)?.preferredMIMEType ?? "application/octet-stream"
-                body.append("Content-Type: \(contentType)\r\n\r\n".data(using: .utf8)!)
+                body.append(Data("Content-Type: \(contentType)\r\n\r\n".utf8))
                 let fileData = try Data(contentsOf: fileURL)
                 body.append(fileData)
-                body.append("\r\n".data(using: .utf8)!)
+                body.append(Data("\r\n".utf8))
             }
-            body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+            body.append(Data("--\(boundary)--\r\n".utf8))
             urlRequest.httpBody = body
         }
 
