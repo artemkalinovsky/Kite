@@ -12,20 +12,20 @@ import Kite
 @Suite("XMLDeserializerTests")
 struct XMLDeserializerTests {
     @Test("Single object deserializer decodes correctly")
-    func testSingleObjectDeserializer() async throws {
+    func testSingleObjectDeserializer() throws {
         let data = XMLStubs.singlePerson.data(using: .utf8)!
         let deserializer = XMLDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
-        let person = try await deserializer.deserialize(data: data)
+        let person = try deserializer.deserialize(data: data)
 
         let expected = TestPerson(name: "John", age: 30)
         #expect(person == expected)
     }
 
     @Test("Collection deserializer decodes correctly")
-    func testCollectionDeserializer() async throws {
+    func testCollectionDeserializer() throws {
         let data = XMLStubs.personCollection.data(using: .utf8)!
         let deserializer = XMLDeserializer<TestPerson>.collectionDeserializer(keyPath: "response", "persons", "person")
-        let persons = try await deserializer.deserialize(data: data)
+        let persons = try deserializer.deserialize(data: data)
         let expected = [
             TestPerson(name: "John", age: 30),
             TestPerson(name: "Jane", age: 25)
@@ -34,13 +34,13 @@ struct XMLDeserializerTests {
     }
 
     @Test("Single object deserializer fails on invalid XML")
-    func testSingleObjectDeserializerFailure() async {
+    func testSingleObjectDeserializerFailure() {
         let invalidXML = "<invalid><xml></invalid>"
         let data = invalidXML.data(using: .utf8)!
         let deserializer = XMLDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
 
-        await #expect(throws: (any Error).self) {
-            _ = try await deserializer.deserialize(data: data)
+        #expect(throws: (any Error).self) {
+            _ = try deserializer.deserialize(data: data)
         }
     }
 }

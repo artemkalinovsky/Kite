@@ -86,7 +86,7 @@ public final class APIClient: Sendable {
             )
         }
 
-        return (try await deserializer.deserialize(data: data), urlResponse)
+        return (try deserializer.deserialize(data: data), urlResponse)
     }
 
     public func execute<R: DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {

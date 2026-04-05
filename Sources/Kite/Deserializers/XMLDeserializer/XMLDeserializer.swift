@@ -30,7 +30,7 @@ public struct XMLDeserializer<T>: ResponseDataDeserializer {
         self.transform = transform
     }
 
-    public func deserialize(data: Data) async throws -> T {
+    public func deserialize(data: Data) throws -> T {
         try transform(data)
     }
 }

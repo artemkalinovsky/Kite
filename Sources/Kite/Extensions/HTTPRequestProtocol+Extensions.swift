@@ -13,7 +13,7 @@ extension HTTPRequestProtocol {
         .get
     }
 
-    public var parameters: [String: Any]? {
+    public var parameters: [String: any Sendable]? {
         nil
     }
 
