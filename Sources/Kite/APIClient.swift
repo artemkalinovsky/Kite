@@ -1,6 +1,10 @@
 import Foundation
 import UniformTypeIdentifiers
 
+public enum APIClientError: Error {
+    case unacceptableStatusCode(statusCode: Int, response: HTTPURLResponse, data: Data)
+}
+
 public final class APIClient: Sendable {
     private let urlSession: URLSession
 
@@ -63,6 +67,16 @@ public final class APIClient: Sendable {
         }
 
         let (data, urlResponse) = try await urlSession.data(for: urlRequest)
+
+        if let httpResponse = urlResponse as? HTTPURLResponse,
+           !(200..<300).contains(httpResponse.statusCode) {
+            throw APIClientError.unacceptableStatusCode(
+                statusCode: httpResponse.statusCode,
+                response: httpResponse,
+                data: data
+            )
+        }
+
         return (try await deserializer.deserialize(data: data), urlResponse)
     }
 
