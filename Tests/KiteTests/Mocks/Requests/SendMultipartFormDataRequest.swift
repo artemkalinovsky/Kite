@@ -13,7 +13,7 @@ struct SendMultipartFormDataRequest: AuthRequestProtocol & DeserializeableReques
         ["X-Test-ID": id.uuidString]
     }
 
-    var deserializer: ResponseDataDeserializer<URL> {
+    var deserializer: any ResponseDataDeserializer<URL> {
         JSONDeserializer<URL>.singleObjectDeserializer(keyPath: "logo_url")
     }
 

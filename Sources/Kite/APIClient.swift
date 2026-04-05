@@ -21,7 +21,7 @@ public final class APIClient: Sendable {
 
     public func execute<T>(
         request: HTTPRequestProtocol,
-        deserializer: ResponseDataDeserializer<T> = VoidDeserializer(),
+        deserializer: any ResponseDataDeserializer<T> = VoidDeserializer(),
         additionalHeaders: [String: String] = [:]
     ) async throws -> (T, URLResponse) {
         guard let url = request.url else {

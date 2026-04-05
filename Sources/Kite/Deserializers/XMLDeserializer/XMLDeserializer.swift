@@ -12,43 +12,45 @@ public enum XMLDeserializerError: LocalizedError {
     }
 }
 
-public class XMLDeserializer<T>: ResponseDataDeserializer<T> {
-    public convenience init() {
-        self.init(
-            transformer: DataTransformer(
-                transform: { xmlObject -> T in
-                    if let xmlObject = xmlObject as? T {
-                        return xmlObject
-                    }
-                    throw XMLDeserializerError.xmlDeserializationFailed(
-                        "Wrong result type: \(type(of: xmlObject)). Expected \(T.self)"
-                    )
-                }
+public struct XMLDeserializer<T>: ResponseDataDeserializer {
+    private let transform: @Sendable (Data) throws -> T
+
+    public init() {
+        self.transform = { xmlObject in
+            if let xmlObject = xmlObject as? T {
+                return xmlObject
+            }
+            throw XMLDeserializerError.xmlDeserializationFailed(
+                "Wrong result type: \(type(of: xmlObject)). Expected \(T.self)"
             )
-        )
+        }
+    }
+
+    init(transform: @Sendable @escaping (Data) throws -> T) {
+        self.transform = transform
+    }
+
+    public func deserialize(data: Data) async throws -> T {
+        try transform(data)
     }
 }
 
 extension XMLDeserializer where T: XMLObjectDeserialization {
-    public class func singleObjectDeserializer(keyPath path: String...) -> XMLDeserializer<T> {
+    public static func singleObjectDeserializer(keyPath path: String...) -> XMLDeserializer<T> {
         XMLDeserializer<T>(
-            transformer: DataTransformer(
-                transform: { xmlData in
-                    let xml = XMLHash.lazy(xmlData)
-                    return try xml[path].value()
-                }
-            )
+            transform: { xmlData in
+                let xml = XMLHash.lazy(xmlData)
+                return try xml[path].value()
+            }
         )
     }
 
-    public class func collectionDeserializer(keyPath path: String...) -> XMLDeserializer<[T]> {
+    public static func collectionDeserializer(keyPath path: String...) -> XMLDeserializer<[T]> {
         XMLDeserializer<[T]>(
-            transformer: DataTransformer(
-                transform: { xmlData in
-                    let xml = XMLHash.lazy(xmlData)
-                    return try xml[path].value()
-                }
-            )
+            transform: { xmlData in
+                let xml = XMLHash.lazy(xmlData)
+                return try xml[path].value()
+            }
         )
     }
 }

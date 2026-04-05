@@ -5,7 +5,7 @@ struct FetchRawDataAuthRequest: AuthRequestProtocol & DeserializeableRequestProt
     let id: UUID
     let accessToken: String
     var baseURL: URL { URL(string: "https://example.com")! }
-    var deserializer: ResponseDataDeserializer<Data> {
+    var deserializer: any ResponseDataDeserializer<Data> {
         RawDataDeserializer()
     }
 

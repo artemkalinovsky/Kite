@@ -7,5 +7,5 @@
 
 public protocol DeserializeableRequestProtocol: HTTPRequestProtocol {
     associatedtype ResponseType
-    var deserializer: ResponseDataDeserializer<ResponseType> { get }
+    var deserializer: any ResponseDataDeserializer<ResponseType> { get }
 }

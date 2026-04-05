@@ -15,7 +15,7 @@ struct FetchSingleTestPersonJSONRequest: DeserializeableRequestProtocol {
 
     let id = UUID()
 
-    var deserializer: ResponseDataDeserializer<TestPerson> {
+    var deserializer: any ResponseDataDeserializer<TestPerson> {
         JSONDeserializer<TestPerson>.singleObjectDeserializer()
     }
 }

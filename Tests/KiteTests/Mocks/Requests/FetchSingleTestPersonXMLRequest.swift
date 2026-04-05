@@ -15,7 +15,7 @@ struct FetchSingleTestPersonXMLRequest: DeserializeableRequestProtocol {
 
     let id = UUID()
 
-    var deserializer: ResponseDataDeserializer<TestPerson> {
+    var deserializer: any ResponseDataDeserializer<TestPerson> {
         XMLDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
     }
 }

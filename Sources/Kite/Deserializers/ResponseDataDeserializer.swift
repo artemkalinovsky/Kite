@@ -1,35 +1,18 @@
 import Foundation
 
-public class ResponseDataDeserializer<T> {
-    private let transformer: DataTransformer<T>
-
-    public init(transformer: DataTransformer<T>) {
-        self.transformer = transformer
-    }
-
-    public func deserialize(data: Data) async throws -> T {
-        return try transformer.transform(data)
-    }
+public protocol ResponseDataDeserializer<Output> {
+    associatedtype Output
+    func deserialize(data: Data) async throws -> Output
 }
 
-public class VoidDeserializer: ResponseDataDeserializer<Void> {
-    public init() {
-        super.init(transformer: DataTransformer())
-    }
+public struct VoidDeserializer: ResponseDataDeserializer {
+    public init() {}
 
-    @available(*, unavailable, message: "Use the default initializer instead")
-    override public init(transformer: DataTransformer<Void> = .init()) {
-        fatalError("This initializer is unavailable. Use the default initializer instead.")
-    }
+    public func deserialize(data: Data) async throws {}
 }
 
-public class RawDataDeserializer: ResponseDataDeserializer<Data> {
-    public init() {
-        super.init(transformer: DataTransformer())
-    }
+public struct RawDataDeserializer: ResponseDataDeserializer {
+    public init() {}
 
-    @available(*, unavailable, message: "Use the default initializer instead")
-    override public init(transformer: DataTransformer<Data> = .init()) {
-        fatalError("This initializer is unavailable. Use the default initializer instead.")
-    }
+    public func deserialize(data: Data) async throws -> Data { data }
 }

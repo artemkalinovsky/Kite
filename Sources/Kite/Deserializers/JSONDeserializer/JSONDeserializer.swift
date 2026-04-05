@@ -14,66 +14,68 @@ public enum JSONDeserializerError: LocalizedError {
     }
 }
 
-public class JSONDeserializer<T>: ResponseDataDeserializer<T> {
-    public convenience init() {
-        self.init(
-            transformer: DataTransformer(
-                transform: { data -> T in
-                    let jsonObject = try JSONSerialization.jsonObject(with: data)
-                    guard let object = jsonObject as? T else {
-                        throw JSONDeserializerError.jsonDeserializableInitFailed(
-                            "Wrong result type: \(type(of: jsonObject)). Expected \(T.self)"
-                        )
-                    }
-                    return object
-                }
-            )
-        )
+public struct JSONDeserializer<T>: ResponseDataDeserializer {
+    private let transform: @Sendable (Data) throws -> T
+
+    public init() {
+        self.transform = { data in
+            let jsonObject = try JSONSerialization.jsonObject(with: data)
+            guard let object = jsonObject as? T else {
+                throw JSONDeserializerError.jsonDeserializableInitFailed(
+                    "Wrong result type: \(type(of: jsonObject)). Expected \(T.self)"
+                )
+            }
+            return object
+        }
+    }
+
+    init(transform: @Sendable @escaping (Data) throws -> T) {
+        self.transform = transform
+    }
+
+    public func deserialize(data: Data) async throws -> T {
+        try transform(data)
     }
 }
 
 extension JSONDeserializer where T: Decodable {
-    public class func singleObjectDeserializer(keyPath path: String...) -> JSONDeserializer<T> {
+    public static func singleObjectDeserializer(keyPath path: String...) -> JSONDeserializer<T> {
         JSONDeserializer<T>(
-            transformer: DataTransformer(
-                transform: { data in
-                    let jsonDecoder = JSONDecoder()
-                    do {
-                        if path.isEmpty {
-                            return try jsonDecoder.decode(T.self, from: data)
-                        } else {
-                            return try jsonDecoder.decode(T.self, from: data, keyPath: path.joined(separator: "."))
-                        }
-                    } catch {
-                        throw JSONDeserializerError.decodingFailed(
-                            underlying: error,
-                            targetType: String(describing: T.self)
-                        )
+            transform: { data in
+                let jsonDecoder = JSONDecoder()
+                do {
+                    if path.isEmpty {
+                        return try jsonDecoder.decode(T.self, from: data)
+                    } else {
+                        return try jsonDecoder.decode(T.self, from: data, keyPath: path.joined(separator: "."))
                     }
+                } catch {
+                    throw JSONDeserializerError.decodingFailed(
+                        underlying: error,
+                        targetType: String(describing: T.self)
+                    )
                 }
-            )
+            }
         )
     }
 
-    public class func collectionDeserializer(keyPath path: String...) -> JSONDeserializer<[T]> {
+    public static func collectionDeserializer(keyPath path: String...) -> JSONDeserializer<[T]> {
         JSONDeserializer<[T]>(
-            transformer: DataTransformer(
-                transform: { data in
-                    let jsonDecoder = JSONDecoder()
-                    do {
-                        if path.isEmpty {
-                            return try jsonDecoder.decode([T].self, from: data)
-                        } else {
-                            return try jsonDecoder.decode([T].self, from: data, keyPath: path.joined(separator: "."))
-                        }
-                    } catch {
-                        throw JSONDeserializerError.decodingFailed(
-                            underlying: error,
-                            targetType: String(describing: [T].self)
-                        )
+            transform: { data in
+                let jsonDecoder = JSONDecoder()
+                do {
+                    if path.isEmpty {
+                        return try jsonDecoder.decode([T].self, from: data)
+                    } else {
+                        return try jsonDecoder.decode([T].self, from: data, keyPath: path.joined(separator: "."))
                     }
+                } catch {
+                    throw JSONDeserializerError.decodingFailed(
+                        underlying: error,
+                        targetType: String(describing: [T].self)
+                    )
                 }
-            )
+            }
         )
     }
 }
