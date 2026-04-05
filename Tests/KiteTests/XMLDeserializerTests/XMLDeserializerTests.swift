@@ -13,7 +13,7 @@ import Kite
 struct XMLDeserializerTests {
     @Test("Single object deserializer decodes correctly")
     func testSingleObjectDeserializer() throws {
-        let data = XMLStubs.singlePerson.data(using: .utf8)!
+        let data = try #require(XMLStubs.singlePerson.data(using: .utf8))
         let deserializer = XMLDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
         let person = try deserializer.deserialize(data: data)
 
@@ -23,7 +23,7 @@ struct XMLDeserializerTests {
 
     @Test("Collection deserializer decodes correctly")
     func testCollectionDeserializer() throws {
-        let data = XMLStubs.personCollection.data(using: .utf8)!
+        let data = try #require(XMLStubs.personCollection.data(using: .utf8))
         let deserializer = XMLDeserializer<TestPerson>.collectionDeserializer(keyPath: "response", "persons", "person")
         let persons = try deserializer.deserialize(data: data)
         let expected = [
@@ -34,9 +34,8 @@ struct XMLDeserializerTests {
     }
 
     @Test("Single object deserializer fails on invalid XML")
-    func testSingleObjectDeserializerFailure() {
-        let invalidXML = "<invalid><xml></invalid>"
-        let data = invalidXML.data(using: .utf8)!
+    func testSingleObjectDeserializerFailure() throws {
+        let data = try #require("<invalid><xml></invalid>".data(using: .utf8))
         let deserializer = XMLDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
 
         #expect(throws: (any Error).self) {

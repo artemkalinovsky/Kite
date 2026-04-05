@@ -12,7 +12,7 @@ import Kite
 struct JSONDeserializerTests {
     @Test("Single object deserializer decodes correctly")
     func testSingleObjectDeserializer() throws {
-        let data = JSONStubs.singlePerson.data(using: .utf8)!
+        let data = try #require(JSONStubs.singlePerson.data(using: .utf8))
         let deserializer = JSONDeserializer<TestPerson>.singleObjectDeserializer()
         let person = try deserializer.deserialize(data: data)
         #expect(person == TestPerson(name: "John", age: 30))
@@ -20,7 +20,7 @@ struct JSONDeserializerTests {
 
     @Test("Collection deserializer decodes correctly")
     func testCollectionDeserializer() throws {
-        let data = JSONStubs.personCollection.data(using: .utf8)!
+        let data = try #require(JSONStubs.personCollection.data(using: .utf8))
         let deserializer = JSONDeserializer<TestPerson>.collectionDeserializer()
         let persons = try deserializer.deserialize(data: data)
         #expect(persons == [
@@ -30,8 +30,8 @@ struct JSONDeserializerTests {
     }
 
     @Test("Single object deserializer fails on invalid JSON")
-    func testSingleObjectDeserializerFailure() {
-        let invalidJSON = "Not a JSON".data(using: .utf8)!
+    func testSingleObjectDeserializerFailure() throws {
+        let invalidJSON = try #require("Not a JSON".data(using: .utf8))
         let deserializer = JSONDeserializer<TestPerson>.singleObjectDeserializer()
         #expect(throws: (any Error).self) {
             _ = try deserializer.deserialize(data: invalidJSON)
@@ -42,7 +42,7 @@ struct JSONDeserializerTests {
 
     @Test("Nested single object deserializer decodes correctly with keyPath")
     func testNestedSingleObjectDeserializer() throws {
-        let data = JSONStubs.nestedSinglePerson.data(using: .utf8)!
+        let data = try #require(JSONStubs.nestedSinglePerson.data(using: .utf8))
         let deserializer = JSONDeserializer<TestPerson>.singleObjectDeserializer(keyPath: "response", "person")
         let person = try deserializer.deserialize(data: data)
         #expect(person == TestPerson(name: "John", age: 30))
@@ -50,7 +50,7 @@ struct JSONDeserializerTests {
 
     @Test("Nested collection deserializer decodes correctly with keyPath")
     func testNestedCollectionDeserializer() throws {
-        let data = JSONStubs.nestedPersonCollection.data(using: .utf8)!
+        let data = try #require(JSONStubs.nestedPersonCollection.data(using: .utf8))
         let deserializer = JSONDeserializer<TestPerson>.collectionDeserializer(keyPath: "response", "persons")
         let persons = try deserializer.deserialize(data: data)
         #expect(persons == [
