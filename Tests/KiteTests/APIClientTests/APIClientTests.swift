@@ -119,6 +119,31 @@ struct APIClientTests {
         }
     }
 
+    @Test("execute(request:) sends authorizationHeaders when request headers contain stale authorization")
+    func testExecutePrefersAuthorizationHeadersOverConflictingRequestHeader() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let token = UUID().uuidString
+        let dummyRequest = FetchRawDataAuthRequest(
+            accessToken: token,
+            extraHeaders: ["Authorization": "Bearer stale-token"]
+        )
+
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            request in
+            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
+
+            let response = HTTPURLResponse(
+                url: try #require(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (Data(), response)
+        }
+
+        _ = try await client.execute(request: dummyRequest)
+    }
+
     @Test("execute(request:) throws badURL when url is nil")
     func testExecuteThrowsOnBadURL() async throws {
         let client = APIClient(urlSession: makeMockSession())
