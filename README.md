@@ -17,7 +17,7 @@ Kite is named after the kite bird, known for its lightness, speed, and agile fli
 ### Features:
 
 * ***Swift Concurrency (async/await)***: Easily manage asynchronous networking operations.
-* Lightweight API Client: A simple APIClient class lets you execute requests that conform to HTTPRequestProtocol or DeserializeableRequest.
+* Lightweight API Client: A simple `APIClient` lets you execute requests that conform to `HTTPRequestProtocol` or `DeserializeableRequestProtocol`.
 * JSON & XML Deserialization: Built-in JSONDeserializer and XMLDeserializer types for decoding server responses.
 
 ## Project Status
@@ -28,12 +28,12 @@ This project is considered production-ready. Contributions—whether pull reques
 
 * #### Swift Package Manager
 
-You can use Xcode SPM GUI: *File -> Swift Packages -> Add Package Dependency -> Pick "Up to Next Major Version 3.0.0"*.
+You can use Xcode SPM GUI: *File -> Swift Packages -> Add Package Dependency -> Pick "Up to Next Major Version 4.0.0"*.
 
 Or add the following to your `Package.swift` file:
 
 ``` swift
-.package(url: "https://github.com/artemkalinovsky/Kite.git", from: "3.0.0")
+.package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
 
 ```
 
@@ -53,7 +53,7 @@ let package = Package(
             targets: ["MyPackage"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "3.0.0")
+        .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
     ],
     targets: [
         .target(
@@ -110,9 +110,9 @@ import Kite
 
 struct FetchRandomUsersRequest: DeserializeableRequestProtocol {
     var baseURL: URL { URL(string: "https://randomuser.me")! }
-    var path: String {"api"}
+    var path: String { "api" }
 
-    var deserializer: ResponseDataDeserializer<[User]> {
+    var deserializer: any ResponseDataDeserializer<[User]> {
         JSONDeserializer<User>.collectionDeserializer(keyPath: "results")
     }
 }
