@@ -14,34 +14,40 @@
 
 Kite is named after the kite bird, known for its lightness, speed, and agile flight. This Swift Package aims to embody those qualities—offering a lightweight, fast, and flexible networking layer that soars across Apple platforms.
 
-### Features:
+- `async`/`await`-first request execution
+- Small protocol-based request model
+- Built-in JSON and XML response deserializers
+- Raw-data and no-op deserializers for simple endpoints
+- Query-string, JSON body, auth-header, and multipart upload support
+- Explicit error behavior for invalid URLs, auth failures, decode failures, and non-2xx responses
 
-* ***Swift Concurrency (async/await)***: Easily manage asynchronous networking operations.
-* Lightweight API Client: A simple `APIClient` lets you execute requests that conform to `HTTPRequestProtocol` or `DeserializeableRequestProtocol`.
-* JSON & XML Deserialization: Built-in JSONDeserializer and XMLDeserializer types for decoding server responses.
+## Requirements
 
-## Project Status
+- Swift 6
+- macOS 12+
+- iOS 15+
+- tvOS 15+
+- watchOS 8+
+- visionOS 1+
+- driverKit 19+
 
-This project is considered production-ready. Contributions—whether pull requests, questions, or suggestions—are always welcome! 😃
+## Installation 📦
 
-## Installation 📦 
+### Swift Package Manager
 
-* #### Swift Package Manager
+In Xcode, choose:
 
-You can use Xcode SPM GUI: *File -> Swift Packages -> Add Package Dependency -> Pick "Up to Next Major Version 4.0.0"*.
+`File` -> `Add Package Dependencies...` -> `Up to Next Major Version` starting at `4.0.0`
 
-Or add the following to your `Package.swift` file:
+Or add Kite to `Package.swift`:
 
-``` swift
+```swift
 .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
-
 ```
 
-Then specify "Kite" as a dependency of the target in which you wish to use Kite.
+Example:
 
-Here's an example `Package.swift`:
-
-``` swift
+```swift
 // swift-tools-version:6.0
 import PackageDescription
 
@@ -50,7 +56,8 @@ let package = Package(
     products: [
         .library(
             name: "MyPackage",
-            targets: ["MyPackage"]),
+            targets: ["MyPackage"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
@@ -58,53 +65,55 @@ let package = Package(
     targets: [
         .target(
             name: "MyPackage",
-            dependencies: ["Kite"])
+            dependencies: ["Kite"]
+        )
     ]
 )
 ```
-## Usage 🧑‍💻
 
-Let's suppose we want to fetch a list of users from JSON and the response looks like this:
+## Quick Start 🧑‍💻
 
-``` json
-{ 
-   "results":[ 
-      { 
-         "name":{ 
-            "first":"brad",
-            "last":"gibson"
-         },
-         "email":"brad.gibson@example.com"
-      }
-   ]
+Suppose you want to fetch users from this JSON payload:
+
+```json
+{
+  "results": [
+    {
+      "name": {
+        "first": "brad",
+        "last": "gibson"
+      },
+      "email": "brad.gibson@example.com"
+    }
+  ]
 }
 ```
 
-* #### Setup
+Create the client:
 
-1. Create `APIClient` :
+```swift
+import Kite
 
-``` swift
-    let apiClient = APIClient()
+let apiClient = APIClient()
 ```
 
-2. Create the Response Model:
+Define the response model:
 
-``` swift
+```swift
 struct User: Decodable {
     struct Name: Decodable {
         let first: String
         let last: String
     }
-    
+
     let name: Name
     let email: String
 }
 ```
 
-3. Create a Request with Endpoint Path and Desired Response Deserializer:
+Define the request:
 
-``` swift
+```swift
 import Foundation
 import Kite
 
@@ -118,25 +127,151 @@ struct FetchRandomUsersRequest: DeserializeableRequestProtocol {
 }
 ```
 
-* #### Perform the Request
+Execute it:
 
-``` swift
-Task {
-    let (users, urlResponse) = try await apiClient.execute(request: FetchRandomUsersRequest())
+```swift
+let (users, _) = try await apiClient.execute(request: FetchRandomUsersRequest())
+```
+
+## Request Defaults
+
+`HTTPRequestProtocol` keeps the required surface deliberately small:
+
+- `baseURL` is the only required property.
+- `path` defaults to `""`.
+- `method` defaults to `.get`.
+- `parameters` defaults to `nil`.
+- `headers` defaults to `[:]`.
+- `multipartFormData` defaults to `nil`.
+- `url` defaults to `baseURL.appendingPathComponent(path)`, but you can override it if needed.
+
+Parameter behavior is built in:
+
+- For `.get` requests, `parameters` are encoded as query items.
+- For non-GET requests, `parameters` are encoded as a JSON body and `Content-Type` is set to `application/json`.
+
+## Deserializers
+
+Kite ships with three built-in deserializer styles:
+
+- `VoidDeserializer()` for endpoints where you only care whether the request succeeded
+- `RawDataDeserializer()` when you want the raw response bytes
+- `JSONDeserializer` for `Decodable` models and `XMLDeserializer` for types that conform to `XMLObjectDeserialization`
+
+Examples:
+
+```swift
+let users = JSONDeserializer<User>.collectionDeserializer(keyPath: "results")
+let profile = JSONDeserializer<User>.singleObjectDeserializer()
+let feed = XMLDeserializer<FeedUser>.collectionDeserializer(keyPath: "response", "users", "user")
+```
+
+## Authenticated Requests
+
+Conform to `AuthRequestProtocol` when the endpoint requires an `Authorization` header:
+
+```swift
+import Foundation
+import Kite
+
+struct FetchProfileRequest: AuthRequestProtocol, DeserializeableRequestProtocol {
+    let accessToken: String
+
+    var baseURL: URL { URL(string: "https://api.example.com")! }
+    var path: String { "profile" }
+
+    var deserializer: any ResponseDataDeserializer<User> {
+        JSONDeserializer<User>.singleObjectDeserializer()
+    }
 }
 ```
 
-Voilà!🧑‍🎨
+By default, Kite sends:
 
-## Apps using Kite
+```http
+Authorization: Bearer <accessToken>
+```
+
+If your backend uses a different prefix, override `accessTokenPrefix`.
+
+## Raw Data Requests
+
+Use `RawDataDeserializer` when the endpoint does not return JSON or XML:
+
+```swift
+import Foundation
+import Kite
+
+struct DownloadAvatarRequest: DeserializeableRequestProtocol {
+    var baseURL: URL { URL(string: "https://cdn.example.com")! }
+    var path: String { "avatar.png" }
+
+    var deserializer: any ResponseDataDeserializer<Data> {
+        RawDataDeserializer()
+    }
+}
+```
+
+## Multipart Uploads
+
+Provide a `[String: URL]` dictionary through `multipartFormData` to upload files:
+
+```swift
+import Foundation
+import Kite
+
+struct UploadAvatarRequest: AuthRequestProtocol, DeserializeableRequestProtocol {
+    let accessToken: String
+    let imageURL: URL
+
+    var baseURL: URL { URL(string: "https://api.example.com")! }
+    var path: String { "upload" }
+    var method: HTTPMethod { .post }
+    var multipartFormData: [String: URL]? { ["file": imageURL] }
+
+    var deserializer: any ResponseDataDeserializer<URL> {
+        JSONDeserializer<URL>.singleObjectDeserializer(keyPath: "avatar_url")
+    }
+}
+```
+
+Kite builds the multipart body and sets the correct `Content-Type` boundary automatically.
+
+## Error Handling
+
+Kite keeps failure modes explicit:
+
+- `URLError(.badURL)` when the request URL is invalid
+- `URLError(.userAuthenticationRequired)` when an authenticated request resolves to an empty `Authorization` header
+- `APIClientError.unacceptableStatusCode` for non-2xx HTTP responses
+- `JSONDeserializerError` and `XMLDeserializerError` for decode failures
+
+Example:
+
+```swift
+do {
+    let (users, _) = try await apiClient.execute(request: FetchRandomUsersRequest())
+    print(users)
+} catch let error as APIClientError {
+    print(error.localizedDescription)
+} catch {
+    print(error.localizedDescription)
+}
+```
+
+## Project Status
+
+Kite is production-ready. Pull requests, questions, and suggestions are welcome.
+
+## Apps Using Kite
 
 - [PinPlace](https://apps.apple.com/ua/app/pinplace/id1571349149)
 
 ## Credits 👏
 
-* @0111b for [JSONDecoder-Keypath](https://github.com/0111b/JSONDecoder-Keypath)
-* @drmohundro for [SWXMLHash](https://github.com/drmohundro/SWXMLHash)
+- @0111b for [JSONDecoder-Keypath](https://github.com/0111b/JSONDecoder-Keypath)
+- @drmohundro for [SWXMLHash](https://github.com/drmohundro/SWXMLHash)
 
 ## License 📄
 
-Kite is released under an MIT license. See [LICENCE](https://github.com/artemkalinovsky/Kite/blob/master/LICENSE) for more information.
+Kite is released under the MIT license. See [LICENSE](https://github.com/artemkalinovsky/Kite/blob/master/LICENSE) for details.
