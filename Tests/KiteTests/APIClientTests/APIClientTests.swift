@@ -142,6 +142,26 @@ struct APIClientTests {
         _ = try await client.execute(request: dummyRequest)
     }
 
+    @Test("execute(request:) auth headers win over case-variant authorization key in request headers")
+    func testExecutePrefersAuthorizationHeadersOverCaseVariantRequestHeader() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let token = UUID().uuidString
+        let dummyRequest = FetchRawDataAuthRequest(
+            accessToken: token,
+            extraHeaders: ["authorization": "Bearer stale-token"]
+        )
+
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            request in
+            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
+            let url = try #require(request.url)
+            let response = try makeResponse(url: url)
+            return (Data(), response)
+        }
+
+        _ = try await client.execute(request: dummyRequest)
+    }
+
     @Test("execute(request:) accepts lowercase authorization header in authorizationHeaders")
     func testExecuteAcceptsLowercaseAuthorizationHeaderKey() async throws {
         let client = APIClient(urlSession: makeMockSession())

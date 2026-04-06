@@ -38,10 +38,10 @@ public final class APIClient: Sendable {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
 
-        let allHeaders = request.headers.merging(try authorizationHeaders(for: request)) { _, additional in
-            additional
+        for (field, value) in request.headers {
+            urlRequest.setValue(value, forHTTPHeaderField: field)
         }
-        for (field, value) in allHeaders {
+        for (field, value) in try authorizationHeaders(for: request) {
             urlRequest.setValue(value, forHTTPHeaderField: field)
         }
 
@@ -154,7 +154,10 @@ public final class APIClient: Sendable {
     }
 
     private func authorizationHeaderValue(in headers: [String: String]) -> String? {
-        headers.first { key, _ in
+        if let value = headers["Authorization"] {
+            return value
+        }
+        return headers.first { key, _ in
             key.caseInsensitiveCompare("Authorization") == .orderedSame
         }?.value
     }
