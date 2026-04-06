@@ -14,13 +14,9 @@ struct APIClientTests {
     @Test("execute(request:) returns expected raw data")
     func testExecuteReturnsExpectedRawData() async throws {
         let client = APIClient(urlSession: makeMockSession())
-        let expectedData = "Test Data".data(using: .utf8)!
-        let expectedResponse = HTTPURLResponse(
-            url: URL(string: "https://example.com/test")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
+        let expectedData = try #require("Test Data".data(using: .utf8))
+        let expectedURL = try makeURL("https://example.com/test")
+        let expectedResponse = try makeResponse(url: expectedURL)
 
         let dummyRequest = FetchRawDataRequest()
 
@@ -40,13 +36,9 @@ struct APIClientTests {
     @Test("execute(request:) handles authenticated request correctly")
     func testExecuteHandlesAuthenticatedRequestCorrectly() async throws {
         let client = APIClient(urlSession: makeMockSession())
-        let expectedData = "Authenticated Data".data(using: .utf8)!
-        let expectedResponse = HTTPURLResponse(
-            url: URL(string: "https://example.com/auth")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
+        let expectedData = try #require("Authenticated Data".data(using: .utf8))
+        let expectedURL = try makeURL("https://example.com/auth")
+        let expectedResponse = try makeResponse(url: expectedURL)
 
         let dummyRequest = FetchRawDataAuthRequest(accessToken: UUID().uuidString)
 
@@ -66,14 +58,10 @@ struct APIClientTests {
     @Test("execute(request:) deserializes JSON response correctly")
     func testExecuteDeserializesJSONResponseCorrectly() async throws {
         let client = APIClient(urlSession: makeMockSession())
-        let expectedData = JSONStubs.singlePerson.data(using: .utf8)!
+        let expectedData = try #require(JSONStubs.singlePerson.data(using: .utf8))
         let expectedTestPerson = TestPerson.sample
-        let expectedResponse = HTTPURLResponse(
-            url: URL(string: "https://example.com/test")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
+        let expectedURL = try makeURL("https://example.com/test")
+        let expectedResponse = try makeResponse(url: expectedURL)
 
         let dummyRequest = FetchSingleTestPersonJSONRequest()
 
@@ -89,14 +77,10 @@ struct APIClientTests {
     @Test("execute(request:) deserializes XML response correctly")
     func testExecuteDeserializesXMLResponseCorrectly() async throws {
         let client = APIClient(urlSession: makeMockSession())
-        let expectedData = XMLStubs.singlePerson.data(using: .utf8)!
+        let expectedData = try #require(XMLStubs.singlePerson.data(using: .utf8))
         let expectedTestPerson = TestPerson.sample
-        let expectedResponse = HTTPURLResponse(
-            url: URL(string: "https://example.com/test")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
+        let expectedURL = try makeURL("https://example.com/test")
+        let expectedResponse = try makeResponse(url: expectedURL)
 
         let dummyRequest = FetchSingleTestPersonXMLRequest()
 
@@ -132,12 +116,8 @@ struct APIClientTests {
             request in
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
 
-            let response = HTTPURLResponse(
-                url: try #require(request.url),
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
+            let url = try #require(request.url)
+            let response = try makeResponse(url: url)
             return (Data(), response)
         }
 
@@ -164,12 +144,8 @@ struct APIClientTests {
 
         await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://example.com/test")!,
-                statusCode: 404,
-                httpVersion: nil,
-                headerFields: nil
-            )!
+            let url = try makeURL("https://example.com/test")
+            let response = try makeResponse(url: url, statusCode: 404)
             return (Data(), response)
         }
 
@@ -196,12 +172,7 @@ struct APIClientTests {
             #expect(request.value(forHTTPHeaderField: "Content-Type") == nil)
             #expect(request.httpBody == nil)
 
-            let response = HTTPURLResponse(
-                url: url,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
+            let response = try makeResponse(url: url)
             return (Data(), response)
         }
 
@@ -243,12 +214,8 @@ struct APIClientTests {
             #expect(json["name"] as? String == "John")
             #expect(json["age"] as? Int == 30)
 
-            let response = HTTPURLResponse(
-                url: request.url!,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
+            let url = try #require(request.url)
+            let response = try makeResponse(url: url)
             return (Data(), response)
         }
 
@@ -258,31 +225,29 @@ struct APIClientTests {
     @Test("execute(request:) handles multipart form data correctly")
     func testExecuteHandlesMultipartFormDataCorrectly() async throws {
         let client = APIClient(urlSession: makeMockSession())
-        let expectedLogoURL = URL(string: "https://example.com/swift_logo.png")!
+        let expectedLogoURL = try makeURL("https://example.com/swift_logo.png")
         let expectedData = """
         {
             "logo_url": "\(expectedLogoURL.absoluteString)"
         }
         """
-        .data(using: .utf8)!
-
-        let expectedResponse = HTTPURLResponse(
-            url: URL(string: "https://example.com/upload")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
+        let encodedExpectedData = try #require(expectedData.data(using: .utf8))
+        let uploadURL = try makeURL("https://example.com/upload")
+        let expectedResponse = try makeResponse(url: uploadURL)
+        let logoFileURL = try #require(
+            Bundle.module.url(forResource: "swift_logo", withExtension: "png")
+        )
 
         let dummyRequest = SendMultipartFormDataRequest(
             accessToken: UUID().uuidString,
             multipartFormData: [
-                "file": Bundle.module.url(forResource: "swift_logo", withExtension: "png")!
+                "file": logoFileURL
             ]
         )
 
         await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
-            return (expectedData, expectedResponse)
+            return (encodedExpectedData, expectedResponse)
         }
 
         let (logoURL, urlResponse) = try await client.execute(request: dummyRequest)
@@ -298,5 +263,19 @@ extension APIClientTests {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: configuration)
+    }
+
+    fileprivate func makeURL(_ string: String) throws -> URL {
+        try #require(URL(string: string))
+    }
+
+    fileprivate func makeResponse(url: URL, statusCode: Int = 200) throws -> HTTPURLResponse {
+        let response = HTTPURLResponse(
+            url: url,
+            statusCode: statusCode,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        return try #require(response)
     }
 }

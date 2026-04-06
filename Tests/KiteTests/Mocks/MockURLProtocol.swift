@@ -30,6 +30,7 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
                 guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
                     throw Error.missedRequestHandler
                 }
+                await MockURLHandlerStore.shared.removeHandler(for: testID)
                 let (data, response) = try handler(self.request)
                 self.client?.urlProtocol(
                     self, didReceive: response, cacheStoragePolicy: .notAllowed)

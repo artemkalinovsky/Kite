@@ -1,5 +1,5 @@
 /// Object which is representing value
-final class KeyPathWrapper<T: Decodable>: Decodable {
+struct KeyPathWrapper<T: Decodable>: Decodable {
 
     enum KeyPathError: Error {
         case `internal`
@@ -49,11 +49,11 @@ final class KeyPathWrapper<T: Decodable>: Decodable {
         }
 
         let rootKey = try getKey(from: keyPath)
-        let rooTContainer = try decoder.container(keyedBy: Key.self)
+        let rootContainer = try decoder.container(keyedBy: Key.self)
 
         let (keyedContainer, key) = try objectContainer(
             for: Array(keyPath.dropFirst()),
-            in: rooTContainer,
+            in: rootContainer,
             key: rootKey
         )
 
