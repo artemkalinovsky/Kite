@@ -10,7 +10,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-final class MockURLProtocol: URLProtocol, @unchecked Sendable {
+final class MockURLProtocol: URLProtocol {
     enum Error: Swift.Error {
         case missedXTestIDHeader
         case missedRequestHandler
@@ -25,24 +25,20 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func startLoading() {
-        Task { @MainActor in
-            do {
-                guard let testID = self.request.value(forHTTPHeaderField: "X-Test-ID") else {
-                    throw Error.missedXTestIDHeader
-                }
-                guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
-                    throw Error.missedRequestHandler
-                }
-                // Handlers are single-use; retry-oriented tests need to register a fresh handler per request.
-                await MockURLHandlerStore.shared.removeHandler(for: testID)
-                let (data, response) = try handler(self.request)
-                self.client?.urlProtocol(
-                    self, didReceive: response, cacheStoragePolicy: .notAllowed)
-                self.client?.urlProtocol(self, didLoad: data)
-                self.client?.urlProtocolDidFinishLoading(self)
-            } catch {
-                self.client?.urlProtocol(self, didFailWithError: error)
+        do {
+            guard let testID = request.value(forHTTPHeaderField: "X-Test-ID") else {
+                throw Error.missedXTestIDHeader
             }
+            guard let handler = MockURLHandlerStore.shared.handler(for: testID) else {
+                throw Error.missedRequestHandler
+            }
+            MockURLHandlerStore.shared.removeHandler(for: testID)
+            let (data, response) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
         }
     }
 

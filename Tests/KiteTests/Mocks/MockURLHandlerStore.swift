@@ -10,23 +10,25 @@ import Foundation
 import FoundationNetworking
 #endif
 
-final actor MockURLHandlerStore {
+final class MockURLHandlerStore: @unchecked Sendable {
     private typealias Handler = @Sendable (URLRequest) throws -> (Data, URLResponse)
     static let shared = MockURLHandlerStore()
     private init() {}
     private var handlers: [String: Handler] = [:]
+    private let lock = NSLock()
+
     func updateRequestHandler(
         for id: String,
         requestHandler: @escaping @Sendable (URLRequest) throws -> (Data, URLResponse)
     ) {
-        handlers[id] = requestHandler
+        lock.withLock { handlers[id] = requestHandler }
     }
 
     func handler(for id: String) -> (@Sendable (URLRequest) throws -> (Data, URLResponse))? {
-        handlers[id]
+        lock.withLock { handlers[id] }
     }
 
     func removeHandler(for id: String) {
-        handlers.removeValue(forKey: id)
+        lock.withLock { handlers.removeValue(forKey: id) }
     }
 }

@@ -23,7 +23,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchRawDataRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
             return (expectedData, expectedResponse)
         }
@@ -46,7 +46,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchRawDataAuthRequest(accessToken: token)
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
             return (expectedData, expectedResponse)
@@ -70,7 +70,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchSingleTestPersonJSONRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
             return (expectedData, expectedResponse)
         }
@@ -89,7 +89,7 @@ struct APIClientTests {
 
         let dummyRequest = FetchSingleTestPersonXMLRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
             return (expectedData, expectedResponse)
         }
@@ -130,7 +130,7 @@ struct APIClientTests {
             extraHeaders: ["Authorization": "Bearer stale-token"]
         )
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
 
@@ -151,7 +151,7 @@ struct APIClientTests {
             extraHeaders: ["authorization": "Bearer stale-token"]
         )
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
             let url = try #require(request.url)
@@ -171,7 +171,7 @@ struct APIClientTests {
         let expectedResponse = try makeResponse(url: expectedURL)
         let dummyRequest = LowercaseAuthorizationHeaderRequest(accessToken: token)
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
             return (expectedData, expectedResponse)
@@ -189,7 +189,7 @@ struct APIClientTests {
         let client = APIClient(urlSession: makeMockSession())
         let dummyRequest = FetchRawDataRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             _ in
             let url = try makeURL("https://example.com/test")
             let response = try makeResponse(url: url, statusCode: 404)
@@ -209,7 +209,7 @@ struct APIClientTests {
         let client = APIClient(urlSession: makeMockSession())
         let dummyRequest = ParameterizedGETRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             let url = try #require(request.url)
             let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
@@ -231,7 +231,7 @@ struct APIClientTests {
         let client = APIClient(urlSession: makeMockSession())
         let dummyRequest = ParameterizedPOSTRequest()
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
 
@@ -274,7 +274,7 @@ struct APIClientTests {
             ]
         )
 
-        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+        MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
             request in
             let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
             #expect(contentType.contains("multipart/form-data; boundary="))
