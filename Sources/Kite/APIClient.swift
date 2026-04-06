@@ -38,10 +38,7 @@ public final class APIClient: Sendable {
         deserializer: any ResponseDataDeserializer<T>,
         additionalHeaders: [String: String]
     ) async throws -> (T, URLResponse) {
-        guard let url = request.url else {
-            throw URLError(.badURL)
-        }
-
+        let url = request.baseURL.appendingPathComponent(request.path)
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
 

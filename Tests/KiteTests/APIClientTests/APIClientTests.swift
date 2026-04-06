@@ -127,19 +127,6 @@ struct APIClientTests {
         _ = try await client.execute(request: dummyRequest)
     }
 
-    @Test("execute(request:) throws badURL when url is nil")
-    func testExecuteThrowsOnBadURL() async throws {
-        let client = APIClient(urlSession: makeMockSession())
-        let dummyRequest = BadURLRequest()
-
-        await #expect(throws: URLError.self) {
-            _ = try await client.execute(
-                request: dummyRequest,
-                deserializer: VoidDeserializer()
-            )
-        }
-    }
-
     @Test("execute(request:) throws unacceptableStatusCode on non-2xx response")
     func testExecuteThrowsOnHTTPErrorStatusCode() async throws {
         let client = APIClient(urlSession: makeMockSession())

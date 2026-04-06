@@ -1,10 +1,6 @@
 import Foundation
 
 extension HTTPRequestProtocol {
-    public var url: URL? {
-        baseURL.appendingPathComponent(self.path)
-    }
-
     public var path: String {
         ""
     }
