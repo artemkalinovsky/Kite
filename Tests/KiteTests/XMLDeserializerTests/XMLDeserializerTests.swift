@@ -67,4 +67,20 @@ struct XMLDeserializerTests {
 
         #expect(name == "John")
     }
+
+    @Test("Default initializer decodes root XML object with XML prolog")
+    func testDefaultInitializerDecodesRootObjectWithXMLProlog() throws {
+        let rootPersonXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <person>
+          <name>John</name>
+          <age>30</age>
+        </person>
+        """
+        let data = try #require(rootPersonXML.data(using: .utf8))
+        let deserializer = XMLDeserializer<TestPerson>()
+        let person = try deserializer.deserialize(data: data)
+
+        #expect(person == TestPerson(name: "John", age: 30))
+    }
 }
