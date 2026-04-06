@@ -57,8 +57,8 @@ public final class APIClient: Sendable {
                     urlRequest.url = newURL
                 }
             } else {
-                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
                 urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
             }
         }
 
