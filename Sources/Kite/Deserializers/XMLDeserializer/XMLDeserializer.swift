@@ -15,17 +15,6 @@ public enum XMLDeserializerError: LocalizedError {
 public struct XMLDeserializer<T>: ResponseDataDeserializer {
     private let transform: @Sendable (Data) throws -> T
 
-    public init() {
-        self.transform = { xmlObject in
-            if let xmlObject = xmlObject as? T {
-                return xmlObject
-            }
-            throw XMLDeserializerError.xmlDeserializationFailed(
-                "Wrong result type: \(type(of: xmlObject)). Expected \(T.self)"
-            )
-        }
-    }
-
     init(transform: @Sendable @escaping (Data) throws -> T) {
         self.transform = transform
     }
@@ -35,7 +24,33 @@ public struct XMLDeserializer<T>: ResponseDataDeserializer {
     }
 }
 
+extension XMLDeserializer where T == Data {
+    public init() {
+        self.transform = { data in
+            data
+        }
+    }
+}
+
+extension XMLDeserializer where T == XMLIndexer {
+    public init() {
+        self.transform = { xmlData in
+            XMLHash.lazy(xmlData)
+        }
+    }
+}
+
 extension XMLDeserializer where T: XMLObjectDeserialization {
+    public init() {
+        self.transform = { xmlData in
+            let xml = XMLHash.lazy(xmlData)
+            guard let rootElement = xml.children.first ?? xml.all.first else {
+                throw XMLDeserializerError.xmlDeserializationFailed("Missing root XML element.")
+            }
+            return try rootElement.value()
+        }
+    }
+
     public static func singleObjectDeserializer(keyPath path: String...) -> XMLDeserializer<T> {
         XMLDeserializer<T>(
             transform: { xmlData in

@@ -42,4 +42,29 @@ struct XMLDeserializerTests {
             _ = try deserializer.deserialize(data: data)
         }
     }
+
+    @Test("Default initializer decodes root XML object")
+    func testDefaultInitializerDecodesRootObject() throws {
+        let rootPersonXML = """
+        <person>
+          <name>John</name>
+          <age>30</age>
+        </person>
+        """
+        let data = try #require(rootPersonXML.data(using: .utf8))
+        let deserializer = XMLDeserializer<TestPerson>()
+        let person = try deserializer.deserialize(data: data)
+
+        #expect(person == TestPerson(name: "John", age: 30))
+    }
+
+    @Test("Default initializer returns XMLIndexer")
+    func testDefaultInitializerReturnsXMLIndexer() throws {
+        let data = try #require(XMLStubs.singlePerson.data(using: .utf8))
+        let deserializer = XMLDeserializer<XMLIndexer>()
+        let xml = try deserializer.deserialize(data: data)
+        let name: String = try xml["response"]["person"]["name"].value()
+
+        #expect(name == "John")
+    }
 }
