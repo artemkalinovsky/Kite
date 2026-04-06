@@ -2,6 +2,7 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
+import Dispatch
 
 public enum APIClientError: LocalizedError {
     case unacceptableStatusCode(statusCode: Int, response: HTTPURLResponse, data: Data)
@@ -74,7 +75,7 @@ public final class APIClient: Sendable {
                 let fileExtension = fileURL.pathExtension
                 let contentType = MIMEType.from(fileExtension: fileExtension)
                 body.append(Data("Content-Type: \(contentType)\r\n\r\n".utf8))
-                let fileData = try Data(contentsOf: fileURL)
+                let fileData = try await readFileData(from: fileURL)
                 body.append(fileData)
                 body.append(Data("\r\n".utf8))
             }
@@ -125,5 +126,27 @@ public final class APIClient: Sendable {
             deserializer: request.deserializer,
             additionalHeaders: request.authorizationHeaders
         )
+    }
+
+    private static let fileReadQueue = DispatchQueue(
+        label: "Kite.APIClient.FileReadQueue",
+        qos: .utility,
+        attributes: .concurrent
+    )
+
+    // Bridge synchronous file I/O onto a utility queue so multipart assembly
+    // does not block the caller's async executor while reading large files.
+    private func readFileData(from fileURL: URL) async throws -> Data {
+        try Task.checkCancellation()
+
+        return try await withCheckedThrowingContinuation { continuation in
+            Self.fileReadQueue.async {
+                do {
+                    continuation.resume(returning: try Data(contentsOf: fileURL))
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 }

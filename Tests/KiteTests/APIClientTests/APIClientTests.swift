@@ -178,25 +178,7 @@ struct APIClientTests {
             request in
             #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
 
-            // URLSession may move httpBody to httpBodyStream in URLProtocol
-            let body: Data
-            if let httpBody = request.httpBody {
-                body = httpBody
-            } else if let stream = request.httpBodyStream {
-                stream.open()
-                var data = Data()
-                let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
-                defer { buffer.deallocate() }
-                while stream.hasBytesAvailable {
-                    let read = stream.read(buffer, maxLength: 1024)
-                    if read > 0 { data.append(buffer, count: read) }
-                    else { break }
-                }
-                stream.close()
-                body = data
-            } else {
-                throw URLError(.cannotParseResponse)
-            }
+            let body = try requestBody(from: request)
 
             let json = try #require(
                 JSONSerialization.jsonObject(with: body) as? [String: Any]
@@ -236,7 +218,16 @@ struct APIClientTests {
         )
 
         await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
-            _ in
+            request in
+            let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
+            #expect(contentType.contains("multipart/form-data; boundary="))
+
+            let body = try requestBody(from: request)
+            let expectedFileData = try Data(contentsOf: logoFileURL)
+
+            #expect(body.range(of: Data("filename=\"swift_logo.png\"".utf8)) != nil)
+            #expect(body.range(of: expectedFileData) != nil)
+
             return (encodedExpectedData, expectedResponse)
         }
 
@@ -257,6 +248,34 @@ extension APIClientTests {
 
     fileprivate func makeURL(_ string: String) throws -> URL {
         try #require(URL(string: string))
+    }
+
+    fileprivate func requestBody(from request: URLRequest) throws -> Data {
+        if let httpBody = request.httpBody {
+            return httpBody
+        }
+
+        guard let stream = request.httpBodyStream else {
+            throw URLError(.cannotParseResponse)
+        }
+
+        stream.open()
+        defer { stream.close() }
+
+        var data = Data()
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+        defer { buffer.deallocate() }
+
+        while stream.hasBytesAvailable {
+            let read = stream.read(buffer, maxLength: 1024)
+            if read > 0 {
+                data.append(buffer, count: read)
+            } else {
+                break
+            }
+        }
+
+        return data
     }
 
     fileprivate func makeResponse(url: URL, statusCode: Int = 200) throws -> HTTPURLResponse {
