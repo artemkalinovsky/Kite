@@ -39,14 +39,16 @@ struct APIClientTests {
     @Test("execute(request:) handles authenticated request correctly")
     func testExecuteHandlesAuthenticatedRequestCorrectly() async throws {
         let client = APIClient(urlSession: makeMockSession())
+        let token = UUID().uuidString
         let expectedData = try #require("Authenticated Data".data(using: .utf8))
         let expectedURL = try makeURL("https://example.com/auth")
         let expectedResponse = try makeResponse(url: expectedURL)
 
-        let dummyRequest = FetchRawDataAuthRequest(accessToken: UUID().uuidString)
+        let dummyRequest = FetchRawDataAuthRequest(accessToken: token)
 
         await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
-            _ in
+            request in
+            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
             return (expectedData, expectedResponse)
         }
 
@@ -106,6 +108,19 @@ struct APIClientTests {
         }
     }
 
+    @Test("execute(request:deserializer:) enforces auth requirements for auth requests")
+    func testExecuteWithCustomDeserializerThrowsOnEmptyAuthToken() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let dummyRequest = EmptyAuthRequest()
+
+        await #expect(throws: URLError.self) {
+            _ = try await client.execute(
+                request: dummyRequest,
+                deserializer: RawDataDeserializer()
+            )
+        }
+    }
+
     @Test("execute(request:) sends authorizationHeaders when request headers contain stale authorization")
     func testExecutePrefersAuthorizationHeadersOverConflictingRequestHeader() async throws {
         let client = APIClient(urlSession: makeMockSession())
@@ -125,6 +140,28 @@ struct APIClientTests {
         }
 
         _ = try await client.execute(request: dummyRequest)
+    }
+
+    @Test("execute(request:) accepts lowercase authorization header in authorizationHeaders")
+    func testExecuteAcceptsLowercaseAuthorizationHeaderKey() async throws {
+        let client = APIClient(urlSession: makeMockSession())
+        let token = UUID().uuidString
+        let expectedData = try #require("Authenticated Data".data(using: .utf8))
+        let expectedURL = try makeURL("https://example.com/auth")
+        let expectedResponse = try makeResponse(url: expectedURL)
+        let dummyRequest = LowercaseAuthorizationHeaderRequest(accessToken: token)
+
+        await MockURLHandlerStore.shared.updateRequestHandler(for: dummyRequest.id.uuidString) {
+            request in
+            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
+            return (expectedData, expectedResponse)
+        }
+
+        let (data, _) = try await client.execute(
+            request: dummyRequest,
+            deserializer: RawDataDeserializer()
+        )
+        #expect(data == expectedData)
     }
 
     @Test("execute(request:) throws unacceptableStatusCode on non-2xx response")
@@ -287,4 +324,15 @@ extension APIClientTests {
         )
         return try #require(response)
     }
+}
+
+private struct LowercaseAuthorizationHeaderRequest: AuthRequestProtocol & DeserializeableRequestProtocol {
+    let id = UUID()
+    let accessToken: String
+
+    var baseURL: URL { URL(string: "https://example.com")! }
+    var path: String { "auth" }
+    var headers: [String: String] { ["X-Test-ID": id.uuidString] }
+    var authorizationHeaders: [String: String] { ["authorization": "\(accessTokenPrefix) \(accessToken)"] }
+    var deserializer: any ResponseDataDeserializer<Data> { RawDataDeserializer() }
 }

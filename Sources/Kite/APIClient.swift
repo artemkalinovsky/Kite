@@ -27,23 +27,20 @@ public final class APIClient: Sendable {
         request: HTTPRequestProtocol,
         deserializer: any ResponseDataDeserializer<T> = VoidDeserializer()
     ) async throws -> (T, URLResponse) {
-        try await execute(
-            request: request,
-            deserializer: deserializer,
-            additionalHeaders: [:]
-        )
+        try await executeRequest(request: request, deserializer: deserializer)
     }
 
-    private func execute<T>(
+    private func executeRequest<T>(
         request: HTTPRequestProtocol,
-        deserializer: any ResponseDataDeserializer<T>,
-        additionalHeaders: [String: String]
+        deserializer: any ResponseDataDeserializer<T>
     ) async throws -> (T, URLResponse) {
         let url = request.baseURL.appendingPathComponent(request.path)
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
 
-        let allHeaders = request.headers.merging(additionalHeaders) { _, additional in additional }
+        let allHeaders = request.headers.merging(try authorizationHeaders(for: request)) { _, additional in
+            additional
+        }
         for (field, value) in allHeaders {
             urlRequest.setValue(value, forHTTPHeaderField: field)
         }
@@ -111,21 +108,11 @@ public final class APIClient: Sendable {
     }
 
     public func execute<R: DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {
-        try await execute(request: request, deserializer: request.deserializer)
+        try await executeRequest(request: request, deserializer: request.deserializer)
     }
 
     public func execute<R: AuthRequestProtocol & DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {
-        let authorizationHeader = request.authorizationHeaders["Authorization"]
-        guard let authorizationHeader, !authorizationHeader.isEmpty
-        else {
-            throw URLError(.userAuthenticationRequired)
-        }
-
-        return try await execute(
-            request: request,
-            deserializer: request.deserializer,
-            additionalHeaders: request.authorizationHeaders
-        )
+        try await executeRequest(request: request, deserializer: request.deserializer)
     }
 
     private static let fileReadQueue = DispatchQueue(
@@ -148,5 +135,27 @@ public final class APIClient: Sendable {
                 }
             }
         }
+    }
+
+    private func authorizationHeaders(for request: HTTPRequestProtocol) throws -> [String: String] {
+        guard let authRequest = request as? any AuthRequestProtocol else {
+            return [:]
+        }
+
+        guard
+            let headerValue = authorizationHeaderValue(in: authRequest.authorizationHeaders)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !headerValue.isEmpty
+        else {
+            throw URLError(.userAuthenticationRequired)
+        }
+
+        return authRequest.authorizationHeaders
+    }
+
+    private func authorizationHeaderValue(in headers: [String: String]) -> String? {
+        headers.first { key, _ in
+            key.caseInsensitiveCompare("Authorization") == .orderedSame
+        }?.value
     }
 }
