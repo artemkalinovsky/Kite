@@ -45,7 +45,7 @@ extension XMLDeserializer where T: XMLObjectDeserialization {
         self.transform = { xmlData in
             let xml = XMLHash.lazy(xmlData)
             guard let rootElement = xml.documentRootElement else {
-                throw XMLDeserializerError.xmlDeserializationFailed("Missing root XML element.")
+                throw XMLDeserializerError.xmlDeserializationFailed("XML document contains no element nodes.")
             }
             return try rootElement.value()
         }

@@ -83,4 +83,22 @@ struct XMLDeserializerTests {
 
         #expect(person == TestPerson(name: "John", age: 30))
     }
+
+    @Test("Default initializer throws specific error when XML has no element nodes")
+    func testDefaultInitializerFailsWhenXMLContainsNoElements() throws {
+        let xmlWithNoElements = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!-- empty -->
+        """
+        let data = try #require(xmlWithNoElements.data(using: .utf8))
+        let deserializer = XMLDeserializer<TestPerson>()
+        do {
+            _ = try deserializer.deserialize(data: data)
+            Issue.record("Expected XMLDeserializerError.xmlDeserializationFailed for XML without element nodes.")
+        } catch let error as XMLDeserializerError {
+            #expect(error.errorDescription == "XML document contains no element nodes.")
+        } catch {
+            Issue.record("Unexpected error type: \(type(of: error))")
+        }
+    }
 }
