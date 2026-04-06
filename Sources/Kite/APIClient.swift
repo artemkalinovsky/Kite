@@ -94,8 +94,8 @@ public final class APIClient: Sendable {
     }
 
     public func execute<R: AuthRequestProtocol & DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {
-        let mergedAuthHeaders = request.headers.merging(request.authorizationHeaders) { _, authorization in authorization }
-        guard let authorizationHeader = mergedAuthHeaders["Authorization"], !authorizationHeader.isEmpty
+        let authorizationHeader = request.authorizationHeaders["Authorization"] ?? request.headers["Authorization"]
+        guard let authorizationHeader, !authorizationHeader.isEmpty
         else {
             throw URLError(.userAuthenticationRequired)
         }
@@ -103,7 +103,7 @@ public final class APIClient: Sendable {
         return try await execute(
             request: request,
             deserializer: request.deserializer,
-            additionalHeaders: mergedAuthHeaders
+            additionalHeaders: request.authorizationHeaders
         )
     }
 }
