@@ -10,15 +10,9 @@ let package = Package(
             name: "Kite",
             targets: ["Kite"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/drmohundro/SWXMLHash.git", exact: "8.1.1")
-    ],
     targets: [
         .target(
-            name: "Kite",
-            dependencies: [
-                .product(name: "SWXMLHash", package: "SWXMLHash")
-            ]
+            name: "Kite"
         ),
         .testTarget(
             name: "KiteTests",

@@ -1,5 +1,4 @@
 import Foundation
-import SWXMLHash
 
 public enum XMLDeserializerError: LocalizedError {
     case xmlDeserializationFailed(String)
@@ -35,7 +34,7 @@ extension XMLDeserializer where T == Data {
 extension XMLDeserializer where T == XMLIndexer {
     public init() {
         self.transform = { xmlData in
-            XMLHash.lazy(xmlData)
+            try XMLHash.lazy(xmlData)
         }
     }
 }
@@ -43,7 +42,7 @@ extension XMLDeserializer where T == XMLIndexer {
 extension XMLDeserializer where T: XMLObjectDeserialization {
     public init() {
         self.transform = { xmlData in
-            let xml = XMLHash.lazy(xmlData)
+            let xml = try XMLHash.lazy(xmlData)
             guard let rootElement = xml.documentRootElement else {
                 throw XMLDeserializerError.xmlDeserializationFailed("XML document contains no element nodes.")
             }
@@ -54,7 +53,7 @@ extension XMLDeserializer where T: XMLObjectDeserialization {
     public static func singleObjectDeserializer(keyPath path: String...) -> XMLDeserializer<T> {
         XMLDeserializer<T>(
             transform: { xmlData in
-                let xml = XMLHash.lazy(xmlData)
+                let xml = try XMLHash.lazy(xmlData)
                 return try xml[path].value()
             }
         )
@@ -63,7 +62,7 @@ extension XMLDeserializer where T: XMLObjectDeserialization {
     public static func collectionDeserializer(keyPath path: String...) -> XMLDeserializer<[T]> {
         XMLDeserializer<[T]>(
             transform: { xmlData in
-                let xml = XMLHash.lazy(xmlData)
+                let xml = try XMLHash.lazy(xmlData)
                 return try xml[path].value()
             }
         )

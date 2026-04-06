@@ -6,7 +6,6 @@
 //
 
 import Testing
-import SWXMLHash
 import Kite
 
 @Suite("XMLDeserializerTests")

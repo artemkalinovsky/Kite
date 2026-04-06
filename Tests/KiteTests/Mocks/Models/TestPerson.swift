@@ -5,7 +5,7 @@
 //  Created by Artem Kalinovsky on 11.03.2025.
 //
 
-import SWXMLHash
+import Kite
 
 struct TestPerson: Codable, Equatable, XMLObjectDeserialization {
     let name: String
