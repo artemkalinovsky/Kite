@@ -105,7 +105,7 @@ public final class APIClient: Sendable {
     }
 
     public func execute<R: AuthRequestProtocol & DeserializeableRequestProtocol>(request: R) async throws -> (R.ResponseType, URLResponse) {
-        let authorizationHeader = request.authorizationHeaders["Authorization"] ?? request.headers["Authorization"]
+        let authorizationHeader = request.authorizationHeaders["Authorization"]
         guard let authorizationHeader, !authorizationHeader.isEmpty
         else {
             throw URLError(.userAuthenticationRequired)
