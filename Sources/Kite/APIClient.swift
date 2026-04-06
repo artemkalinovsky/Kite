@@ -47,21 +47,6 @@ public final class APIClient: Sendable {
             urlRequest.setValue(value, forHTTPHeaderField: field)
         }
 
-        if let parameters = request.parameters {
-            if request.method == .get {
-                var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-                components?.queryItems = parameters.map { key, value in
-                    URLQueryItem(name: key, value: "\(value)")
-                }
-                if let newURL = components?.url {
-                    urlRequest.url = newURL
-                }
-            } else {
-                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
-            }
-        }
-
         if let multipartFormData = request.multipartFormData, !multipartFormData.isEmpty {
             let boundary = "Boundary-\(UUID().uuidString)"
             urlRequest.setValue(
@@ -69,6 +54,17 @@ public final class APIClient: Sendable {
             )
 
             var body = Data()
+
+            if let parameters = request.parameters {
+                for (key, value) in parameters {
+                    body.append(Data("--\(boundary)\r\n".utf8))
+                    body.append(
+                        Data("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".utf8)
+                    )
+                    body.append(Data("\(value)\r\n".utf8))
+                }
+            }
+
             for (key, fileURL) in multipartFormData {
                 body.append(Data("--\(boundary)\r\n".utf8))
                 let filename = fileURL.lastPathComponent
@@ -84,6 +80,19 @@ public final class APIClient: Sendable {
             }
             body.append(Data("--\(boundary)--\r\n".utf8))
             urlRequest.httpBody = body
+        } else if let parameters = request.parameters {
+            if request.method == .get {
+                var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                components?.queryItems = parameters.map { key, value in
+                    URLQueryItem(name: key, value: "\(value)")
+                }
+                if let newURL = components?.url {
+                    urlRequest.url = newURL
+                }
+            } else {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
+            }
         }
 
         let (data, urlResponse) = try await urlSession.data(for: urlRequest)
