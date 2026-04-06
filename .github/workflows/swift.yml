@@ -15,11 +15,9 @@ jobs:
         include:
           - os: macos-latest
           - os: ubuntu-latest
-            swift-version: "6.1"
           # Windows disabled: swift-actions/setup-swift@v2 has broken Windows support
           # Re-enable once setup-swift@v3 ships (https://github.com/swift-actions/setup-swift/issues/709)
           # - os: windows-latest
-          #   swift-version: "6.1"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -33,11 +31,21 @@ jobs:
       - name: Setup Swift
         if: runner.os != 'macOS'
         uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift-version }}
 
       - name: Build
         run: swift build -v
 
       - name: Run tests
         run: swift test -v
+
+  build-android:
+    name: Build for Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test on Android (aarch64, API 24)
+        uses: skiptools/swift-android-action@v2
+        with:
+          swift-version: "latest"
+          free-disk-space: true
