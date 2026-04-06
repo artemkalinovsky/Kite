@@ -144,7 +144,6 @@ let (users, _) = try await apiClient.execute(request: FetchRandomUsersRequest())
 - `parameters` defaults to `nil`.
 - `headers` defaults to `[:]`.
 - `multipartFormData` defaults to `nil`.
-- `url` defaults to `baseURL.appendingPathComponent(path)`, but you can override it if needed.
 
 Parameter behavior is built in:
 
@@ -194,6 +193,7 @@ Authorization: Bearer <accessToken>
 ```
 
 If your backend uses a different prefix, override `accessTokenPrefix`.
+If your backend expects a different authorization header name or casing, override `authorizationHeaders`.
 
 ## Raw Data Requests
 
@@ -242,7 +242,6 @@ Kite builds the multipart body and sets the correct `Content-Type` boundary auto
 
 Kite keeps failure modes explicit:
 
-- `URLError(.badURL)` when the request URL is invalid
 - `URLError(.userAuthenticationRequired)` when an authenticated request resolves to an empty `Authorization` header
 - `APIClientError.unacceptableStatusCode` for non-2xx HTTP responses
 - `JSONDeserializerError` and `XMLDeserializerError` for decode failures
