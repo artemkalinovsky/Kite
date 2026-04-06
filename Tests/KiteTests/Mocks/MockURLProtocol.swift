@@ -30,6 +30,7 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
                 guard let handler = await MockURLHandlerStore.shared.handler(for: testID) else {
                     throw Error.missedRequestHandler
                 }
+                // Handlers are single-use; retry-oriented tests need to register a fresh handler per request.
                 await MockURLHandlerStore.shared.removeHandler(for: testID)
                 let (data, response) = try handler(self.request)
                 self.client?.urlProtocol(
