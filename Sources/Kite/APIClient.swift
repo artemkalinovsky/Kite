@@ -1,5 +1,7 @@
 import Foundation
-import UniformTypeIdentifiers
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public enum APIClientError: LocalizedError {
     case unacceptableStatusCode(statusCode: Int, response: HTTPURLResponse, data: Data)
@@ -12,6 +14,7 @@ public enum APIClientError: LocalizedError {
     }
 }
 
+@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 public final class APIClient: Sendable {
     private let urlSession: URLSession
 
@@ -76,7 +79,7 @@ public final class APIClient: Sendable {
                     Data("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n".utf8)
                 )
                 let fileExtension = fileURL.pathExtension
-                let contentType = UTType(filenameExtension: fileExtension)?.preferredMIMEType ?? "application/octet-stream"
+                let contentType = MIMEType.from(fileExtension: fileExtension)
                 body.append(Data("Content-Type: \(contentType)\r\n\r\n".utf8))
                 let fileData = try Data(contentsOf: fileURL)
                 body.append(fileData)
