@@ -1,5 +1,5 @@
 ![swift workflow](https://github.com/artemkalinovsky/Kite/actions/workflows/swift.yml/badge.svg)
-[![Swift 6](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
+[![Swift 6](https://img.shields.io/badge/Swift-6-orange.svg)](https://swift.org)
 [![macOS](https://img.shields.io/badge/macOS-12%2B-blue.svg)](https://developer.apple.com/macos/)
 [![iOS](https://img.shields.io/badge/iOS-15%2B-blue.svg)](https://developer.apple.com/ios/)
 [![tvOS](https://img.shields.io/badge/tvOS-15%2B-blue.svg)](https://developer.apple.com/tvos/)
@@ -12,9 +12,10 @@
 <img src="https://github.com/user-attachments/assets/67d7a28c-e45b-4abd-bdf4-86b329c439b5" width="20%" />
 
 
-# Kite 
+# Kite
 
 Kite is named after the kite bird, known for its lightness, speed, and agile flight. This Swift Package aims to embody those qualities—offering a lightweight, fast, and flexible networking layer that runs on Apple platforms, Linux, Windows, and Android.
+
 ## Features
 
 - `async`/`await`-first request execution
@@ -22,7 +23,8 @@ Kite is named after the kite bird, known for its lightness, speed, and agile fli
 - Built-in JSON and XML response deserializers
 - Raw-data and no-op deserializers for simple endpoints
 - Query-string, JSON body, auth-header, and multipart upload support
-- Explicit error behavior for invalid URLs, auth failures, decode failures, and non-2xx responses
+- Zero external dependencies
+- Explicit error behavior for auth failures, decode failures, and non-2xx responses
 
 ## Requirements
 
@@ -38,12 +40,12 @@ Kite is named after the kite bird, known for its lightness, speed, and agile fli
 
 In Xcode, choose:
 
-`File` -> `Add Package Dependencies...` -> `Up to Next Major Version` starting at `4.0.0`
+`File` -> `Add Package Dependencies...` -> `Up to Next Major Version` starting at `5.0.0`
 
 Or add Kite to `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
+.package(url: "https://github.com/artemkalinovsky/Kite.git", from: "5.0.0")
 ```
 
 Example:
@@ -61,7 +63,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "4.0.0")
+        .package(url: "https://github.com/artemkalinovsky/Kite.git", from: "5.0.0")
     ],
     targets: [
         .target(
@@ -145,10 +147,11 @@ let (users, _) = try await apiClient.execute(request: FetchRandomUsersRequest())
 - `headers` defaults to `[:]`.
 - `multipartFormData` defaults to `nil`.
 
-Parameter behavior is built in:
+Parameter encoding is determined by the request shape:
 
-- For `.get` requests, `parameters` are encoded as query items.
-- For non-GET requests, `parameters` are encoded as a JSON body and `Content-Type` is set to `application/json`.
+- For `.get` requests, `parameters` are encoded as URL query items.
+- For non-GET requests without `multipartFormData`, `parameters` are encoded as a JSON body and `Content-Type` is set to `application/json`.
+- When `multipartFormData` is present, `parameters` are included as text form fields alongside the files in the same multipart body.
 
 ## Deserializers
 
@@ -156,14 +159,29 @@ Kite ships with three built-in deserializer styles:
 
 - `VoidDeserializer()` for endpoints where you only care whether the request succeeded
 - `RawDataDeserializer()` when you want the raw response bytes
-- `JSONDeserializer` for `Decodable` models and `XMLDeserializer` for types that conform to `XMLObjectDeserialization`
+- `JSONDeserializer` for `Decodable` models
+- `XMLDeserializer` for types that conform to `XMLObjectDeserialization` — built into Kite, no extra import needed
 
 Examples:
 
 ```swift
 let users = JSONDeserializer<User>.collectionDeserializer(keyPath: "results")
 let profile = JSONDeserializer<User>.singleObjectDeserializer()
-let feed = XMLDeserializer<FeedUser>.collectionDeserializer(keyPath: "response", "users", "user")
+let feed = XMLDeserializer<FeedItem>.collectionDeserializer(keyPath: "response", "items", "item")
+```
+
+To use `XMLDeserializer`, conform your model to `XMLObjectDeserialization`:
+
+```swift
+import Kite
+
+struct FeedItem: XMLObjectDeserialization {
+    let title: String
+
+    static func deserialize(_ node: XMLIndexer) throws -> Self {
+        FeedItem(title: try node["title"].value())
+    }
+}
 ```
 
 ## Authenticated Requests
@@ -266,11 +284,6 @@ Kite is production-ready. Pull requests, questions, and suggestions are welcome.
 ## Apps Using Kite
 
 - [PinPlace](https://apps.apple.com/ua/app/pinplace/id1571349149)
-
-## Credits 👏
-
-- @0111b for [JSONDecoder-Keypath](https://github.com/0111b/JSONDecoder-Keypath)
-- @drmohundro for [SWXMLHash](https://github.com/drmohundro/SWXMLHash)
 
 ## License 📄
 
