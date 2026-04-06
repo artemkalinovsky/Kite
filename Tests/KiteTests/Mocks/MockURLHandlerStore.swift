@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 final actor MockURLHandlerStore {
     private typealias Handler = @Sendable (URLRequest) throws -> (Data, URLResponse)
