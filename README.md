@@ -4,15 +4,17 @@
 [![iOS](https://img.shields.io/badge/iOS-15%2B-blue.svg)](https://developer.apple.com/ios/)
 [![tvOS](https://img.shields.io/badge/tvOS-15%2B-blue.svg)](https://developer.apple.com/tvos/)
 [![watchOS](https://img.shields.io/badge/watchOS-8%2B-blue.svg)](https://developer.apple.com/watchos/)
-[![driverKit](https://img.shields.io/badge/driverKit-19%2B-blue.svg)](https://developer.apple.com/driverkit/)
 [![visionOS](https://img.shields.io/badge/visionOS-1%2B-blue.svg)](https://developer.apple.com/visionos/)
+[![Linux](https://img.shields.io/badge/Linux-supported-green.svg)](https://www.swift.org/platforms/)
+[![Windows](https://img.shields.io/badge/Windows-supported-green.svg)](https://www.swift.org/platforms/)
+[![Android](https://img.shields.io/badge/Android-experimental-yellow.svg)](https://www.swift.org/blog/nightly-swift-sdk-for-android/)
 
 <img src="https://github.com/user-attachments/assets/67d7a28c-e45b-4abd-bdf4-86b329c439b5" width="20%" />
 
 
 # Kite 
 
-Kite is named after the kite bird, known for its lightness, speed, and agile flight. This Swift Package aims to embody those qualities—offering a lightweight, fast, and flexible networking layer that soars across Apple platforms.
+Kite is named after the kite bird, known for its lightness, speed, and agile flight. This Swift Package aims to embody those qualities—offering a lightweight, fast, and flexible networking layer that runs on Apple platforms, Linux, Windows, and Android.
 ## Features
 
 - `async`/`await`-first request execution
@@ -25,12 +27,10 @@ Kite is named after the kite bird, known for its lightness, speed, and agile fli
 ## Requirements
 
 - Swift 6
-- macOS 12+
-- iOS 15+
-- tvOS 15+
-- watchOS 8+
-- visionOS 1+
-- driverKit 19+
+- **Apple platforms:** macOS 12+, iOS 15+, tvOS 15+, watchOS 8+, visionOS 1+
+- **Linux:** any Swift 6-supported distribution
+- **Windows:** any Swift 6-supported release
+- **Android:** experimental via the [nightly Swift SDK for Android](https://www.swift.org/blog/nightly-swift-sdk-for-android/)
 
 ## Installation 📦
 
